@@ -1,12 +1,19 @@
 var express = require('express');
-var fs = require('fs');
+var fs      = require('fs');
 var request = require('request');
 var cheerio = require('cheerio');
 var app     = express();
+var path    = require('path');
+
 var downloadimages = true; 
 var saveimageinfo = true;
 
 var base_url = 'https://en.wikipedia.org/wiki/20th-century_Western_painting';
+
+
+app.get('/', function(req, res) {
+    res.sendFile(path.join(__dirname + '/index.html'));
+});
 
 app.get('/scrape', function(req, res){
 
@@ -43,7 +50,7 @@ request(base_url, function(error, response, html){
 
     })
     if (saveimageinfo == true){
-        fs.writeFile("/home/palle/Project/Node/scrape/hist.json", JSON.stringify(img_urls, null, 2), function(err) {
+        fs.writeFile("/public/hist.json", JSON.stringify(img_urls, null, 2), function(err) {
             if(err) {
                 return console.log(err);
             }
@@ -52,7 +59,7 @@ request(base_url, function(error, response, html){
     }
    
     // Finally, we'll just send out a message to the browser reminding you that this app does not have a UI.
-    res.send('Check your console!')
+    res.send('Saving data')
 
     });
 })
@@ -70,23 +77,29 @@ app.get('/download', function(req, res){
          
         var temp_url = "https://en.wikipedia.org"+url
         console.log(temp_url); 
-        request(temp_url, function(error, response, html){
-            var $ = cheerio.load(html);        
-            
-            var img_div = $('.fullMedia .internal');
-            var img_title = img_div['0'].attribs.title;
-            console.log(img_title); 
-            var img_link = img_div['0'].attribs.href;
-            img_link = 'https:'+img_link; 
-      
-            download(img_link, "/home/palle/Project/Node/scrape/images/"+filename+".jpg", function(){
-                console.log('done : ', filename);
-            });  
-        })
+        try {
+            request(temp_url, function(error, response, html){
+                var $ = cheerio.load(html);        
+                
+                var img_div = $('.fullMedia .internal');
+                var img_title = img_div['0'].attribs.title;
+                console.log(img_title); 
+                var img_link = img_div['0'].attribs.href;
+                img_link = 'https:'+img_link; 
+          
+                download(img_link, "public/images/"+filename+".jpg", function(){
+                    console.log('done : ', filename);
+                });  
+            })
+        }
+        catch(err) {
+            console.log(err)
+        }
+
     };
 
 
-    fs.readFile("/home/palle/Project/Node/scrape/hist.json", 'utf8', function (err, data) {
+    fs.readFile("public/hist.json", 'utf8', function (err, data) {
         if (err) throw err;
         obj = JSON.parse(data);
         var i = 0; 
@@ -102,12 +115,16 @@ app.get('/download', function(req, res){
 
     });
 
-    res.send('Check your console!')
+    res.send('downloading images')
 
 });
 
  
 app.listen('8081')
 
+app.use(express.static('public'))
+
 console.log('Magic happens on port 8081');
 exports = module.exports = app;
+
+

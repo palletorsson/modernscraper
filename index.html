@@ -1,0 +1,150 @@
+
+
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="css/jquery-ui.css">
+    
+  
+    
+    <title>canvas</title>
+    <style type="text/css">
+        body {
+          background-color: white; 
+          font-family:Webdings; 
+          
+        }
+        .canvas-container {
+           width: 100%;
+           text-align:center;           
+        }
+        canvas {
+           display: inline;           
+        }
+        .info {
+           position: fixed;
+           top: 250px;
+           left: -600px;
+           color: grey;
+           font-size: 24px; 
+           opacity: .7;
+           -moz-transform: rotate(-90.0deg);  /* FF3.5+ */
+           -o-transform: rotate(-90.0deg);  /* Opera 10.5 */
+           -webkit-transform: rotate(-90.0deg);  /* Saf3.1+, Chrome */
+        }
+    </style>
+
+    <script type="text/javascript" src="js/jquery.js"></script>
+    <script type="text/javascript"  src="js/jquery-ui.js"></script>
+    <script type="text/javascript" src="js/Tone.min.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
+<script>
+  $( function() {
+    $( "#slider-range" ).slider({
+      orientation: "vertical",
+      range: true,
+      values: [ 300, 67 ],
+      slide: function( event, ui ) {
+        $( "#amount" ).val( "$" + ui.values[ 0 ] + " - $" + ui.values[ 1 ] );
+        $( "#canvasWidth" ).val(ui.values[ 0 ]);
+      }
+    });
+    $( "#amount" ).val( "$" + $( "#slider-range" ).slider( "values", 0 ) +
+      " - $" + $( "#slider-range" ).slider( "values", 1 ) );
+  } );
+
+  $(document).keypress(function(e) {
+      if(e.which == 101) {
+          var curr = $( "#canvasWidth" ).val()
+          curr = parseInt(curr) + 10; 
+          $( "#canvasWidth" ).val(curr);
+          }    
+      if(e.which == 100) {
+          var curr = $( "#canvasWidth" ).val()
+          curr = parseInt(curr) -  10; 
+          $( "#canvasWidth" ).val(curr);
+      }  
+      if(e.which == 114) {
+          var curr = $( "#canvasHeight" ).val()
+          curr = parseInt(curr) + 10; 
+          $( "#canvasHeight" ).val(curr);
+          }    
+      if(e.which == 102) {
+          var curr = $( "#canvasHeight" ).val()
+          curr = parseInt(curr) -  10; 
+          $( "#canvasHeight" ).val(curr);
+      } 
+      if(e.which == 98) {
+         var curr = $( "#b" ).val();
+         curr = parseInt(curr) + 1; 
+         curr = $( "#b" ).val(curr);
+      } 
+        if(e.which == 99) {
+         var curr = $( "#c" ).val();
+         curr = parseInt(curr) + 1; 
+         curr = $( "#c" ).val(curr);
+      } 
+      if(e.which == 113) {
+         var d_curr = $( "#speed" ).val();
+         d_curr = parseFloat(d_curr) + 1; 
+         d_curr = $( "#speed" ).val(d_curr);
+      } 
+      if(e.which == 97) {
+          var t_curr = $( "#speed" ).val();
+          t_curr = parseFloat(t_curr) - 1; 
+          t_curr = $( "#speed" ).val(t_curr);
+      }
+      if(e.which == 122) {
+          var v_curr = $( "#velocity" ).val();
+          v_curr = parseFloat(v_curr) + 1; 
+          v_curr = $( "#velocity" ).val(v_curr);
+      }
+      if(e.which == 120) {
+          var v_curr = $( "#velocity" ).val();
+          v_curr = parseFloat(v_curr) - 1; 
+          v_curr = $( "#velocity" ).val(v_curr);
+      }
+    
+    });
+  </script>
+  </head>
+  <body>
+    <div>
+        <input id="grayscalebtn" value="Grayscale" type="button">
+        <input id="next" value="next" type="button">
+        <input id="room" value="room" type="button">
+        <input id="inter" value="inter" type="button">
+        <input id="arch" value="arch" type="button">
+        <input id="rand" value="rand" type="button">
+        <input id="hist" value="hist" type="button">
+        <input id="text" value="text" type="button">                
+        <input id="trix" value="trix" type="button"> 
+        <input id="midlines" value="midlines" type="button"> 
+        <input id="wave" value="wave" type="button">
+        <input id="spiral" value="spiral" type="button"> 
+        <input id="py" value="py" type="button"> 
+        <input id="inbetween" value="inbetween" type="button">
+        <input type="text" id="canvasWidth" value="1200">
+        <input type="text" id="canvasHeight" value="1200">
+        <input type="text" id="c" value="0">
+        <input type="text" id="speed" value="500">
+        T: <input type="text" id="time" value="0.001">
+        V:<input type="text" id="velocity" value="10">
+        D:<input type="text" id="duration" value="0.001">
+    </div>
+    <div class="canvas-container">
+        <canvas id="canvas" class="center" width="1200px" height="1000px"></canvas>
+        <div class="info"> Art 1923 </div>
+    </div>
+    <span ><img src="images/smiley_sm.png" id="smile" /></span>
+    <div>
+      <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
+    </div>
+    <div id="slider-range" style="height:1200px;"></div>
+    <hr>    
+    <div class="images hidden">
+    </div>
+  </body>
+  </html>
