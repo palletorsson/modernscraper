@@ -34,6 +34,7 @@ var collect_tones = true;
 var note_collation = []
 var drum_index = 0; 
 var drums = true; 
+var base_index = 0; 
 var soundsys = false; 
 var oscillator = true; 
 var osc_partials = [];
@@ -67,10 +68,11 @@ var ctrl_index = 0;
 if (oscillator == true) {
     var osc = new Tone.Oscillator({
       "frequency" : 440,
-      "volume" : 2
+      "volume" : 1
     }).toMaster().start();
 }
 var synth = new Tone.PolySynth(3, Tone.Synth, {
+  "volume": 1, 
   "oscillator" : {
     "type" : "fatsawtooth",
     "count" : 3,
@@ -87,7 +89,7 @@ var synth = new Tone.PolySynth(3, Tone.Synth, {
 
 //  PIANO
 var piano = new Tone.PolySynth(4, Tone.Synth, {
-    "volume" : -8,
+    "volume" : 1,
     "oscillator" : {
         "partials" : [1, 2, 5],
     },
@@ -154,12 +156,12 @@ var notes = [
                 "H" : "audio/505/hh.mp3",
                 "0H" : "audio/505/hho.mp3",
             },
-            volume : 2,
+            volume : 1,
             fadeOut : 0.1,
         }).toMaster();
 
-    var bass = new Tone.MonoSynth({
-            "volume" : 2,
+    var base = new Tone.MonoSynth({
+            "volume" : -10,
             "envelope" : {
                 "attack" : 0.1,
                 "decay" : 0.3,
@@ -367,7 +369,8 @@ function drawProcess() {
         color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',0.8';
 
         if (playing == 'first_tune'){
-          if (c % 128 == 0) {
+          // change 64 128 265
+          if (c % 64 == 0) {
             
               var brightness_1 = (0.2126*pix_row[c] + 0.7152*pix_row[c+1] + 0.0722*pix_row[c+2]) 
               var brightness = (pix_row[c] + pix_row[c+1] + pix_row[c+2]);
@@ -395,7 +398,8 @@ function drawProcess() {
               var freq = harm + octaves / 32; 
               
               // make 8 an octave number from j, d_octave is used to make the note within the octave 
-              var d_octave = j / 160
+              // higher number less octaves 
+              var d_octave = j / 260
               octave = Math.floor(d_octave+1)
               
               // only play note it the brightness is lower then the set threshold
@@ -417,12 +421,13 @@ function drawProcess() {
                   }
                   // trigger a note  ... (note, durration, time, velocity)
                   if (collect_tones == true) { 
-                        note_collation.push(the_final_note); 
-                      
+                      if (note_collation.indexOf(the_final_note) == -1) {
+                          note_collation.push(the_final_note); 
+                      }
                    
                   } else {
                       if (note_collation.indexOf(the_final_note) == -1) {
-                          synth.triggerAttackRelease(the_final_note, undefined, rand, 1); // j/200
+                          synth.triggerAttackRelease(the_final_note, undefined, rand, 0.9); // j/200
                       }
                   }
                       
@@ -430,8 +435,11 @@ function drawProcess() {
                   // logging
                   // synth.triggerAttackRelease(the_final_note, 0.27403818749999975, 0, 0.8818897637795275);
                   // console.log("-----", the_final_note, the_note, octave); 
-                  ctx.fillText(the_final_note , j , 200);
-                  
+                  if (j < canvasWidth/2-100) {
+                      ctx.fillText("+" , j , 400-d_octave*60);
+                  } else {
+                      ctx.fillText("+" , j , 200+d_octave*60);
+                  }
                   } else {
                       // rise the bar or the threshold if not notes are playing
                       anti_threshold = anti_threshold + 1;
@@ -454,7 +462,7 @@ function drawProcess() {
                   }
               }
 
-            ctx.beginPath();
+              ctx.beginPath();
               //color_in = brightness+','+brightness+','+brightness+',1';
               color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',1';
               ctx.moveTo(j, 0);
@@ -477,40 +485,55 @@ function drawProcess() {
 
               // drums
               if (drums == true) { 
-                  if (soundplay % 1024 == 0) {
+                  if (soundplay % 512 == 0) {
                      
                       
                       if (kicks[drum_index] == "#") {
                           keys.start("K", undefined);
-                          console.log("kick", drum_index)
+                          //console.log("kick", drum_index); 
+                          if (note_collation[0]) {
+
+                          if (note_collation[0].slice(-1) < 2) {
+                              base.triggerAttackRelease(note_collation[0], undefined, 0.9);
+                          }
+                          }
                       } 
 
                       if (snares[drum_index] == "x") {
                           keys.start("S", undefined);
-                          console.log("snare", drum_index)
+                          //console.log("snare", drum_index)
                       }
                       if (hats[drum_index+1] == "o") {
                           keys.start("H", undefined);
-                          console.log("hihat", drum_index)
+                          //console.log("hihat", drum_index)
                       }
                       drum_index++; 
                       if (drum_index == 31) {
                           drum_index = 0; 
                       }
-                      console.log("_ _", drum_index)
+                      //console.log("_ _", drum_index)
                       
+                      base_index = base_index + 1; 
+                      if (base_index > notes.length-1) {
+                        base_index = 0; 
+                      }
 
                   }
               }
               //console.log(note_collation, rand)
               if (soundplay % 4096 == 0) {
-                  //piano.triggerAttackRelease(note_collation, 0.002, 0, 1);
+                  if (drum_index == 16) {
+                      piano.triggerAttackRelease(note_collation, undefined, 0, 1);
+                  }
+
                   //console.log(note_collation, rand)
                   
                   // ctx.fillText(anti_threshold  + "rgb test: "+row , 400, 400);
                   if (note_collation.length > 0) {
-                      for (i=0; i < note_collation.length; i= i +4) {
-                            synth.triggerAttackRelease(note_collation[i], undefined, ["1n"], 1);
+                       for (i=note_collation.length+1; i > 0; i= i - 1) {
+                      //for (i=0; i < note_collation.length; i= i + 1) {
+                            // or pianoSynth
+                            synth.triggerAttackRelease(note_collation[i], undefined, ["1n"], 0.9);
                       } 
                     //console.log(note_collation[i])
                   } else {
@@ -520,23 +543,25 @@ function drawProcess() {
                   if (note_collation.length > 10) {
                     threshold = threshold - 3; 
                   }
-                  if (note_collation.length < 1) {
-                    threshold = threshold + 3; 
+                  if (note_collation.length < 6) {
+                    threshold = threshold + 2; 
                   }
-                  console.log(brightness/2, " < ",  threshold, note_collation.length, note_collation, )
+                  // console.log(brightness/2, " < ",  threshold, note_collation.length, note_collation, )
                   
-                    note_collation = []; 
+                  note_collation = []; 
                   
-                  console.log("----------")
+                  // console.log("----------")
                   
                   collect = 0; 
                   color_contrast = 0;
                   // console.log(brightness)
                    if (oscillator == true) {
-                    console.log(brightness)
+                    // console.log(brightness)
                     if (brightness > 100) {
                   // osc.frequency.rampTo(brightness/1.7, 1)
-                  osc.frequency.value = brightness-100
+                  osc.frequency.value = brightness/2-100
+                } else {
+                  osc.frequency.value = brightness/2
                 }
               } 
                   brightness = 0; 
