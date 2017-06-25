@@ -13,7 +13,7 @@
     <style type="text/css">
         body {
           background-color: white; 
-          font-family:Webdings; 
+          font-family:Arial; 
           
         }
         .canvas-container {
@@ -56,6 +56,7 @@
   } );
 
   $(document).keypress(function(e) {
+    console.log(e.which); 
       if(e.which == 101) {
           var curr = $( "#canvasWidth" ).val()
           curr = parseInt(curr) + 10; 
@@ -106,6 +107,41 @@
           v_curr = parseFloat(v_curr) - 1; 
           v_curr = $( "#velocity" ).val(v_curr);
       }
+      if(e.which == 108) {
+          $( "#contrl_this" ).text(ctrl_list[ctrl_index]);
+          
+          ctrl_index = ctrl_index + 1; 
+          if (ctrl_index > ctrl_list.length) {
+            ctrl_index = 0; 
+          }
+
+      }
+      if(e.which == 112) {
+          var what = $( "#contrl_this" ).text();
+          var vals = $( "#"+what ).val()
+          if (what == "speed") {
+              vals = parseFloat(vals) + 1; 
+          } else {
+              vals = parseFloat(vals) + 0.1; 
+          }
+          $( "#"+what ).val(vals)
+          
+
+
+      }
+          if(e.which == 246) {
+          var what = $( "#contrl_this" ).text();
+          var vals = $( "#"+what ).val()
+           if (what == "speed") {
+              vals = parseFloat(vals) - 1; 
+          } else {
+              vals = parseFloat(vals) - 0.1; 
+          } 
+          $( "#"+what ).val(vals)
+          
+         
+
+      }
     
     });
   </script>
@@ -114,6 +150,7 @@
     <div>
         <input id="grayscalebtn" value="Grayscale" type="button">
         <input id="next" value="next" type="button">
+        <input id="first_tune" value="first_tune" type="button">
         <input id="room" value="room" type="button">
         <input id="inter" value="inter" type="button">
         <input id="arch" value="arch" type="button">
@@ -129,13 +166,21 @@
         <input type="text" id="canvasWidth" value="1200">
         <input type="text" id="canvasHeight" value="1200">
         <input type="text" id="c" value="0">
-        <input type="text" id="speed" value="500">
+        Speed<input type="text" id="speed" value="500">
         T: <input type="text" id="time" value="0.001">
-        V:<input type="text" id="velocity" value="10">
+        V:<input type="text" id="velocity" value="50">
         D:<input type="text" id="duration" value="0.001">
+        <input type="text" id="oscillator_count" value="3">
+        Volume: <input type="text" id="oscillator_volume" value="2">
+        Count: <input type="text" id="oscillator_volume" value="3">
+        Spread: <input type="text" id="oscillator_spread" value="30">
+        Sustain: <input type="text" id="oscillator_sustain" value="0.1">
+        <div id="contrl_this"></div>
+  
+
     </div>
     <div class="canvas-container">
-        <canvas id="canvas" class="center" width="1200px" height="1000px"></canvas>
+        <canvas id="canvas" class="center" width="1024px" height="1000px"></canvas>
         <div class="info"> Art 1923 </div>
     </div>
     <span ><img src="images/smiley_sm.png" id="smile" /></span>

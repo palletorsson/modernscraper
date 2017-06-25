@@ -13,7 +13,7 @@ var saveimages = true;
 var folder = "1024"
 var old_img = ''
 var rectang = 1024;
-var playing = 'inbetween2'
+var playing = 'histogram'
 var zoom = 0;
 var move = 0;
 var input_text = "index preface divisions thanks method question"
@@ -28,14 +28,18 @@ var wavelength= 100,
     phase= 90,
     width= 1200,
     thickness= 2;
-var threshold = 30; 
+var threshold = 20; 
 var anti_threshold = 0; 
-var drum_index = 1; 
+var collect_tones = true; 
+var note_collation = []
+var drum_index = 0; 
 var drums = true; 
-var oscillator = false; 
-duration = 0.8;
-time = 0;
-velocity = 0.2;
+var soundsys = false; 
+var oscillator = true; 
+var osc_partials = [];
+var duration = 0.8;
+var time = 0;
+var velocity = 0.2;
 var height = amplitude * 2;
 var move_wave = 0; 
 var road_h = 0;
@@ -53,8 +57,19 @@ var c = 0;
 var b = 0; 
 var soundplay = 0; 
 var collect = 0; 
-var synth = new Tone.FMSynth().toMaster(); 
-var osc = new Tone.Oscillator(0).toMaster().start();
+
+var kicks =  ["#","-","-","-", "#","-","-","-", "#","-","_","-", "#","-","-","-", "#","-","-","-", "#","-","-","-", "#","-","_","-", "#","-","#","-", ]; 
+var snares = ["-","-","-","-", "x","-","-","-", "-","-","-","-", "X","-","-","-", "-","-","-","-", "x","-","-","-", "-","-","-","-", "X","-","-","-", ]; 
+var hats =   ["-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-",]; 
+       
+var ctrl_list = ["speed", "oscillator_volume", "oscillator_volume", "oscillator_spread", "oscillator_sustain"]       
+var ctrl_index = 0; 
+if (oscillator == true) {
+    var osc = new Tone.Oscillator({
+      "frequency" : 440,
+      "volume" : 2
+    }).toMaster().start();
+}
 var synth = new Tone.PolySynth(3, Tone.Synth, {
   "oscillator" : {
     "type" : "fatsawtooth",
@@ -69,6 +84,17 @@ var synth = new Tone.PolySynth(3, Tone.Synth, {
     "attackCurve" : "exponential"
   },
 }).toMaster();
+
+//  PIANO
+var piano = new Tone.PolySynth(4, Tone.Synth, {
+    "volume" : -8,
+    "oscillator" : {
+        "partials" : [1, 2, 5],
+    },
+    "portamento" : 0.005
+}).toMaster()
+
+var main_cord = []; 
 var the_speed = 1000;
 var note_num = 0;
 var notes = [
@@ -125,14 +151,15 @@ var notes = [
                 "K" : "audio/505/kick.mp3",
                 "S" : "audio/505/snare.mp3",
                 "P" : "audio/505/agogoHigh.mp3",
-                "Z" : "audio/505/hh.mp3",
+                "H" : "audio/505/hh.mp3",
+                "0H" : "audio/505/hho.mp3",
             },
-            volume : 0.1,
+            volume : 2,
             fadeOut : 0.1,
         }).toMaster();
 
     var bass = new Tone.MonoSynth({
-            "volume" : -10,
+            "volume" : 2,
             "envelope" : {
                 "attack" : 0.1,
                 "decay" : 0.3,
@@ -151,6 +178,28 @@ var notes = [
             bass.triggerAttackRelease(note, "16n", time);
         }, ["C2", ["C3", ["C3", "D2"]], "E2", ["D2", "A1"]]).start(0);
 
+     var pianoSynth = new Tone.PolySynth(4, Tone.Synth, {
+            "oscillator" : {
+                "partials" : [1, 2, 1],
+            },
+            "portamento" : 0.05, 
+            "oscillator": {
+      "detune": 0,
+      "type": "custom",
+      "partials" : [2, 1, 2, 2],
+      "phase": 0,
+      "volume": 0
+    },
+    "envelope": {
+      "attack": 0.005,
+      "decay": 0.3,
+      "sustain": 0.2,
+      "release": 1,
+    },
+    "portamento": 0.01,
+    "volume": -10
+
+        }).toMaster()
 
 $(function(){
 
@@ -252,7 +301,9 @@ function drawProcess() {
         pixelArray = imageData.data;
         old_img.remove()
         old_img = img; 
+        if (oscillator) {
         osc.frequency.value = 440; 
+        }
         rect(); 
         move = 0;
         anti_troskel = 0;
@@ -287,38 +338,55 @@ function drawProcess() {
         // get canvas height and width dynamically
         canvasWidth = $( "#canvasWidth" ).val();
         canvasHeight = $( "#canvasHeight" ).val();
-      
+            // sustain nob? 
+            synth.set({
+              "oscillator" : {
+                
+                "count" : $( "#oscillator_count" ).val(),
+                "spread" :  $( "#oscillator_spread" ).val(),
+              },
+              "volume" : $( "#oscillator_volume" ).val(),
+              "filter" : {
+                "type" : "highpass"
+              },
+              "envelope" : {
+                
+                "sustain": $( "#oscillator_sustain" ).val(),
+                
+              }
+            });
         // transpose the color index, will change rgb_a colors
         c = c + parseInt($( "#c" ).val());
-        time = parseInt($( "#time" ).val());
-        threshold = parseInt($( "#velocity" ).val());
-        duration = parseInt($( "#duration" ).val());
+        //time = parseInt($( "#time" ).val());
+        //threshold = parseInt($( "#velocity" ).val());
+        //duration = parseInt($( "#duration" ).val());
         // Loop pixel row 
         for (j = 0; j < canvasHeight; j = j + 1) {
 
         // set rbg color from pixel valuse 
         color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',0.8';
 
-        if (playing == 'room'){
+        if (playing == 'first_tune'){
+          if (c % 128 == 0) {
+            
               var brightness_1 = (0.2126*pix_row[c] + 0.7152*pix_row[c+1] + 0.0722*pix_row[c+2]) 
-              var brightness = (pix_row[c] + pix_row[c+1] + pix_row[c+2]) 
-
-              var amp = brightness;
-
-              
+              var brightness = (pix_row[c] + pix_row[c+1] + pix_row[c+2]);
+              var brightness = brightness +brightness;              
               var test_r = pix_row[c] / pix_row[c] + pix_row[c+1] +pix_row[c+2];
               var test_g = pix_row[c+1] / pix_row[c] + pix_row[c+1] +pix_row[c+2];
               var test_b = pix_row[c+2] / pix_row[c] + pix_row[c+1] +pix_row[c+2];
-              var test_rgb = Math.floor(test_r + test_g + test_b);
-              
-              
-             
+              var test_rgb = Math.floor(test_r + test_g + test_b);             
               var contrast = pix_row[c] - pix_row[c+2]; 
+              var test_r = pix_row[c]*2 - (pix_row[c+1] + pix_row[c+2]);
+              var test_g = pix_row[c+1]*2 - (pix_row[c] +pix_row[c+2]);
+              var test_b = pix_row[c+2]*2 - (pix_row[c] + pix_row[c+1]);
+              // console.log(test_r, test_g, test_b); 
               if (contrast > 0) {
                   color_contrast = color_contrast + contrast;
                   collect = collect + 1;
               }
-              var brightness = (pix_row[c]  + pix_row[c+1]  +  pix_row[c + 2]) / 3;
+
+              var brightness = Math.floor((pix_row[c]  + pix_row[c+1]  +  pix_row[c + 2]) / 3 || 100);
               
               // var brightness = pix_row[c]; 
               var harm = pix_row[c] * (255 / 12); // 20 -> 5000
@@ -327,11 +395,11 @@ function drawProcess() {
               var freq = harm + octaves / 32; 
               
               // make 8 an octave number from j, d_octave is used to make the note within the octave 
-              var d_octave = j / 120 
+              var d_octave = j / 160
               octave = Math.floor(d_octave+1)
               
               // only play note it the brightness is lower then the set threshold
-              if (brightness < threshold) {
+              if (brightness/2 < threshold) {
                   
                   // get the note with in the octave from the decimals 
                   var the_note = d_octave % 1;
@@ -341,32 +409,58 @@ function drawProcess() {
                   var the_final_note = notes_map[the_note]+octave; 
 
                   // use random to spread the notes a lite bit 
-                  var rand  = Math.random() * 1 * 0.0001 + 0.001; 
-                  
+                  var rand  = Math.random() * 1 + 0.002; 
+                  //console.log(rand)
+                  //console.log(j/1000)
+                  if (!rand) {
+                    rand = 0.009; 
+                  }
                   // trigger a note  ... (note, durration, time, velocity)
-                  synth.triggerAttackRelease(the_final_note, rand, 0, 1);
+                  if (collect_tones == true) { 
+                        note_collation.push(the_final_note); 
+                      
+                   
+                  } else {
+                      if (note_collation.indexOf(the_final_note) == -1) {
+                          synth.triggerAttackRelease(the_final_note, undefined, rand, 1); // j/200
+                      }
+                  }
+                      
                   
                   // logging
                   // synth.triggerAttackRelease(the_final_note, 0.27403818749999975, 0, 0.8818897637795275);
                   // console.log("-----", the_final_note, the_note, octave); 
-                  // ctx.fillText(the_final_note , j , 200);
+                  ctx.fillText(the_final_note , j , 200);
                   
-              } else {
-                  // rise the bar or the threshold if not notes are playing
-                  anti_threshold = anti_threshold + 1;
-                  if (anti_threshold > 30000) {
-                    threshold = threshold + 1; 
-                    anti_threshold = 0;  
-              } 
-
- 
+                  } else {
+                      // rise the bar or the threshold if not notes are playing
+                      anti_threshold = anti_threshold + 1;
+                      if (anti_threshold > 30000) {
+                          threshold = threshold + 1; 
+                          anti_threshold = 0;  
+                      } 
+                  }
+                  if (soundsys == true) {
+                      ctx.beginPath();
+                      //color_in = brightness+','+brightness+','+brightness+',1';
+                      color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',1';
+                      ctx.moveTo(j, 0);
+                      ctx.lineTo(j+256, 0);
+                      ctx.lineTo(j+256, canvasWidth);
+                      ctx.lineTo(j, canvasWidth);
+                      ctx.lineTo(j, 0);
+                      ctx.fillStyle ='rgba('+color_in+')';
+                      ctx.fill();
+                  }
               }
 
-              ctx.beginPath();
+            ctx.beginPath();
               //color_in = brightness+','+brightness+','+brightness+',1';
               color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',1';
               ctx.moveTo(j, 0);
+              
               ctx.lineTo(j, canvasWidth);
+              
               ctx.strokeStyle ='rgba('+color_in+')';
               ctx.stroke();
               c = c + 4;
@@ -380,42 +474,75 @@ function drawProcess() {
               
               var z = c % 5000;
               soundplay = soundplay + 1; 
+
               // drums
               if (drums == true) { 
-                  if (soundplay == 2048 || soundplay == 1024) {
-                      // keys.start("P", 0);
-                      keys.start("Z", 0);
-
-                      if (drum_index == 1) {
-                          keys.start("K", 0);
-                      }
-
-                      if (drum_index == 3) {
-                          keys.start("S", 0); 
-                      }
+                  if (soundplay % 1024 == 0) {
                      
-                      drum_index++; 
+                      
+                      if (kicks[drum_index] == "#") {
+                          keys.start("K", undefined);
+                          console.log("kick", drum_index)
+                      } 
 
-                      if (drum_index == 4) {
-                        drum_index = 1; 
+                      if (snares[drum_index] == "x") {
+                          keys.start("S", undefined);
+                          console.log("snare", drum_index)
                       }
+                      if (hats[drum_index+1] == "o") {
+                          keys.start("H", undefined);
+                          console.log("hihat", drum_index)
+                      }
+                      drum_index++; 
+                      if (drum_index == 31) {
+                          drum_index = 0; 
+                      }
+                      console.log("_ _", drum_index)
                       
 
                   }
               }
-              if (oscillator == true) {
-                  if (soundplay == 2048) {
-                      // ctx.fillText(anti_threshold  + "rgb test: "+row , 400, 400);
-                      // synth.triggerAttackRelease(notes[note_num].name, rand+0.5, 1, 1);
-                      var temp_f = osc.frequency.value 
-                      osc.frequency.value = brightness/440;
-                      soundplay = 0; 
-                      collect = 0; 
-                      color_contrast = 0;
-                  } 
-              } else {
-                 osc.frequency.value = brightness/10000;
-              }
+              //console.log(note_collation, rand)
+              if (soundplay % 4096 == 0) {
+                  //piano.triggerAttackRelease(note_collation, 0.002, 0, 1);
+                  //console.log(note_collation, rand)
+                  
+                  // ctx.fillText(anti_threshold  + "rgb test: "+row , 400, 400);
+                  if (note_collation.length > 0) {
+                      for (i=0; i < note_collation.length; i= i +4) {
+                            synth.triggerAttackRelease(note_collation[i], undefined, ["1n"], 1);
+                      } 
+                    //console.log(note_collation[i])
+                  } else {
+                      synth.triggerAttackRelease("C3", undefined, 2, 1);
+                  }
+                  
+                  if (note_collation.length > 10) {
+                    threshold = threshold - 3; 
+                  }
+                  if (note_collation.length < 1) {
+                    threshold = threshold + 3; 
+                  }
+                  console.log(brightness/2, " < ",  threshold, note_collation.length, note_collation, )
+                  
+                    note_collation = []; 
+                  
+                  console.log("----------")
+                  
+                  collect = 0; 
+                  color_contrast = 0;
+                  // console.log(brightness)
+                   if (oscillator == true) {
+                    console.log(brightness)
+                    if (brightness > 100) {
+                  // osc.frequency.rampTo(brightness/1.7, 1)
+                  osc.frequency.value = brightness-100
+                }
+              } 
+                  brightness = 0; 
+              } 
+
+
              
         } // end of music
 
@@ -448,6 +575,48 @@ function drawProcess() {
             c = c + 4
             ctx.stroke();  
         }
+
+        if (playing == 'histogram')  {
+                ctx.beginPath();
+                ctx.moveTo(j, canvasWidth);
+                color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',1';
+                ctx.strokeStyle ='rgba('+color_in+')';
+                var sum = Math.floor(pix_row[c] + pix_row[c+1] + pix_row[c+2]); 
+                ctx.lineTo(j, Math.floor(sum/1.3));
+                c = c + 4
+                ctx.closePath(); 
+                ctx.stroke();
+                if (sum) {
+                 if (c % 128 == 0) { 
+               synth.triggerAttackRelease("C"+Math.floor(sum/90), undefined, 0, 0.2);
+             }
+              if (c % 400 == 0) { 
+                
+              synth.triggerAttackRelease("G"+Math.floor(sum/90), 0.003, 0, 0.2);
+                }
+              }
+            if (c % 32 == 0) {
+              if (sum) {
+                osc_partials.push(sum);
+                console.log(sum/90)
+                
+              
+            
+            }
+          }
+
+            soundplay = soundplay + 1; 
+            if (soundplay == 4096) {
+                  oso_partials = []; 
+                  
+                  soundplay = 0; 
+                if (oscillator == true) {
+                osc.frequency.value = sum/16;
+               }
+              } 
+
+        }
+
       
         if (playing == 'similey')  {
             color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',1';
@@ -460,16 +629,16 @@ function drawProcess() {
             ctx.fillStyle = 'rgba('+color_in+')';
             var sum = Math.floor(pix_row[c] + pix_row[c+1] + pix_row[c+2]); 
             if (move > 800) {
-            var rand2 = Math.floor(Math.random() * 100); 
-            ctx.font = rand2+'pt Webdings'; 
-            ctx.fillText("0", j-30, Math.floor(sum)-move+1000);
-        } else { 
-            ctx.fillText("wmwmwmwm", j-30, 600-Math.floor(sum)- move+1000); }
-            c = c + 4;
-            // o is good for wave . for city
-            // console.log(move, sum, j, c)
-        }            
-        
+                var rand2 = Math.floor(Math.random() * 100); 
+                ctx.font = rand2+'pt Webdings'; 
+                ctx.fillText("0", j-30, Math.floor(sum)-move+1000);
+            } else { 
+                ctx.fillText("wmwmwmwm", j-30, 600-Math.floor(sum)- move+1000); }
+                c = c + 4;
+                // o is good for wave . for city
+                // console.log(move, sum, j, c)
+            }            
+        }
         if (playing == 'rsand'){
             ctx.beginPath();
             color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',0.3';
@@ -483,103 +652,93 @@ function drawProcess() {
             b = b + 2; 
         }
 
-        if (playing == 'rand'){   
-            color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',0.1';
-            var rand1 = Math.floor(Math.random() * canvasWidth); 
-            var rand2 = Math.floor(Math.random() * canvasHeight); 
-            var rand3 = Math.floor(Math.random() * canvasHeight); 
-            var rand4 = Math.floor(Math.random() * canvasHeight); 
-            ctx.beginPath();
-            ctx.moveTo(j+canvasWidth/2, rand2);
-            ctx.lineTo(rand4+canvasWidth/2, rand1);
-            ctx.lineTo(j+canvasWidth/2, rand3);
-            ctx.fillStyle ='rgba('+color_in+')';
-            ctx.fill();
-            ctx.beginPath();
-            ctx.moveTo(j, rand2/2);
-            ctx.lineTo(rand1,rand4);
-            ctx.lineTo(j, rand3);
-            ctx.fillStyle ='rgba('+color_in+')';
-            ctx.fill();
-            c = c + 4;
-            b = b + 2; 
-        }
-        //ctx.moveTo(rectang/2+j,rectang/2);
-        //ctx.lineTo(rectang/2-j,rectang/2+j);
-        //ctx.lineTo(rectang/2+j,rectang/2);
-        //ctx.stroke();
+      if (playing == 'rand'){   
+          color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',0.1';
+          var rand1 = Math.floor(Math.random() * canvasWidth); 
+          var rand2 = Math.floor(Math.random() * canvasHeight); 
+          var rand3 = Math.floor(Math.random() * canvasHeight); 
+          var rand4 = Math.floor(Math.random() * canvasHeight); 
+          ctx.beginPath();
+          ctx.moveTo(j+canvasWidth/2, rand2);
+          ctx.lineTo(rand4+canvasWidth/2, rand1);
+          ctx.lineTo(j+canvasWidth/2, rand3);
+          ctx.fillStyle ='rgba('+color_in+')';
+          ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(j, rand2/2);
+          ctx.lineTo(rand1,rand4);
+          ctx.lineTo(j, rand3);
+          ctx.fillStyle ='rgba('+color_in+')';
+          ctx.fill();
+          c = c + 4;
+          b = b + 2; 
+      }
+
         
-        if (playing == 'rowom'){
-            //ctx.translate(j, j); 
-            //ctx.rotate(j * Math.PI / 180); 
-            ctx.beginPath();
-            ctx.rect(1000/2-j,1200/2-j,b,b);
-            ctx.strokeStyle ='rgba('+color_in+')';
-            ctx.stroke();
-            c = c + 4;
-            b = b + 2;        
-        }
+      if (playing == 'rowom'){
+          //ctx.translate(j, j); 
+          //ctx.rotate(j * Math.PI / 180); 
+          ctx.beginPath();
+          ctx.rect(1000/2-j,1200/2-j,b,b);
+          ctx.strokeStyle ='rgba('+color_in+')';
+          ctx.stroke();
+          c = c + 4;
+          b = b + 2;        
+      }
 
       if (playing == 'spiral'){
           if (j < 600) {
-          ctx.beginPath();
-
-          ctx.moveTo(canvasWidth/2, canvasHeight/2);
-          color_in = pix_row_zoom[c]+','+pix_row_zoom[c+1]+','+pix_row_zoom[c+2]+',0.3';
-          ctx.strokeStyle ='rgba('+color_in+')';
-          ctx.lineWidth = 3;
-          while( theta < 3) {
-             var newX = canvasWidth/2 + theta * Math.cos(theta+j*6) * 200 + j / 1000; //  gap; 
-             var newY = canvasHeight/2 + theta * Math.sin(theta+j*6) * 200 +  j / 1000;  //gap; 
-             ctx.lineTo(newX, newY);
-             theta = theta + increment + j / 10000;
-            
-          }
-          theta = 0; 
-          ctx.stroke(); // draw the spiral
-          c = c + 4;
-      } else {
-        j = 1200; 
-      }
-      }
-
-     if (playing == 'trix'){
-            
-
-              var x = 1000/2; 
-              var y = 1000/2-b;
-              var z = j;  
               ctx.beginPath();
-              var color_in = pix_row_zoom[c]+','+pix_row_zoom[c+1]+','+pix_row_zoom[c+2]+',0.3';
-              ctx.lineWidth = 3;
-              ctx.moveTo(x, y); 
-              ctx.lineTo(x+z, y+z); // 100, 150
-              ctx.lineTo(x+z, y+z*2); // 100, 200
-              ctx.lineTo(x, y+z*3); // 100, 200
-              
-              ctx.lineTo(x-z, y+z*2); // 50, 250
-              ctx.lineTo(x-z, y+z); // 50, 250
-              ctx.lineTo(x, y); 
-              
-              
+              ctx.moveTo(canvasWidth/2, canvasHeight/2);
+              color_in = pix_row_zoom[c]+','+pix_row_zoom[c+1]+','+pix_row_zoom[c+2]+',0.3';
               ctx.strokeStyle ='rgba('+color_in+')';
-              ctx.stroke();
-              
-
+              ctx.lineWidth = 3;
+              while( theta < 3) {
+                 var newX = canvasWidth/2 + theta * Math.cos(theta+j*6) * 200 + j / 1000; //  gap; 
+                 var newY = canvasHeight/2 + theta * Math.sin(theta+j*6) * 200 +  j / 1000;  //gap; 
+                 ctx.lineTo(newX, newY);
+                 theta = theta + increment + j / 10000;
+              }
+              theta = 0; 
+              ctx.stroke(); // draw the spiral
               c = c + 4;
-              b = b + 2; 
+          } else {
+              j = 1200; 
           }
+      }
 
-    if (playing == 'road') {
-      
+      if (playing == 'trix'){
+              
+          var x = 1000/2; 
+          var y = 1000/2-b;
+          var z = j;  
+          ctx.beginPath();
+          var color_in = pix_row_zoom[c]+','+pix_row_zoom[c+1]+','+pix_row_zoom[c+2]+',0.3';
+          ctx.lineWidth = 3;
+          ctx.moveTo(x, y); 
+          ctx.lineTo(x+z, y+z); // 100, 150
+          ctx.lineTo(x+z, y+z*2); // 100, 200
+          ctx.lineTo(x, y+z*3); // 100, 200
           
+          ctx.lineTo(x-z, y+z*2); // 50, 250
+          ctx.lineTo(x-z, y+z); // 50, 250
+          ctx.lineTo(x, y); 
+          
+          
+          ctx.strokeStyle ='rgba('+color_in+')';
+          ctx.stroke();
+          c = c + 4;
+          b = b + 2; 
+      }
+
+      if (playing == 'road') {
             ctx.beginPath();
             spacing = 2.5
             w = road_i+j;
             h = 4*w;
             x = canvasWidth*.50 - w/2;
             road_h = road_h + spacing * h; 
-            
+
             ctx.rect(x, road_h, w, h);
             ctx.moveTo(x,road_h);
             ctx.lineTo(x+w,road_h);
@@ -589,274 +748,230 @@ function drawProcess() {
             ctx.closePath();
             ctx.fillStyle ='rgba('+color_in+')';
             ctx.fill(); 
-           road_i++; 
-          if (road_h > 1000) {
-              road_h = 0;
-          }
+            road_i++; 
+            if (road_h > 1000) {
+                road_h = 0;
+            }
 
       }
-          if (playing == 'arch'){
-            
-
-            var radius = j/6;
-            var startAngle = 0 * Math.PI;
-            var endAngle = 2 * Math.PI;
-            var counterClockwise = false;
-
-            ctx.beginPath();
-            ctx.arc(258, 258, radius, startAngle, endAngle, counterClockwise);
-             var color_in = pix_row_zoom[c]+','+pix_row_zoom[c+1]+','+pix_row_zoom[c+2]+',0.1';
-             
-                 if (b < 200) {
-                  ctx.strokeStyle ='rgba(0,0,0,1)';
-              } else {
-                  ctx.strokeStyle ='rgba('+color_in+')';
-              }
-              ctx.stroke();
-              c = c + 12;
-              b = b + 2; 
-            
+      if (playing == 'arch'){
+        var radius = j/6;
+        var startAngle = 0 * Math.PI;
+        var endAngle = 2 * Math.PI;
+        var counterClockwise = false;
+        ctx.beginPath();
+        ctx.arc(258, 258, radius, startAngle, endAngle, counterClockwise);
+         var color_in = pix_row_zoom[c]+','+pix_row_zoom[c+1]+','+pix_row_zoom[c+2]+',0.1';
+         
+          if (b < 200) {
+              ctx.strokeStyle ='rgba(0,0,0,1)';
+          } else {
+              ctx.strokeStyle ='rgba('+color_in+')';
           }
-          if (playing == 'wave'){
+          ctx.stroke();
+          c = c + 12;
+          b = b + 2;           
+      }
+      if (playing == 'wave'){
 
-            if (j > 400 && j < 1100) {
+          if (j > 400 && j < 1100) {
               var rand = Math.floor(Math.random() * 10); 
               phase =  phase * Math.PI / 180;
               var amp = amplitude - thickness / 2;
               var freq = 2 * Math.PI * (1 / wavelength);
               var yOrigin = height / 2 + j - amplitude;
-
               var y1, y2;
               ctx.beginPath();
               ctx.strokeStyle ='rgba('+color_in+')';
               for ( var i = 0; i < width; i++) { 
-                y1 = amp * Math.sin(phase + freq * i) + yOrigin; 
-                y2 = amp * Math.sin(phase + freq * (i + 1)) + yOrigin; 
-                ctx.moveTo(i , y1); 
-                ctx.lineTo(i + 1, y2); 
-                }
-                ctx.stroke();
-                c = c + 4;
-              } else { 
-              if (j > 1100) {
-                j = canvasHeight;
+                  y1 = amp * Math.sin(phase + freq * i) + yOrigin; 
+                  y2 = amp * Math.sin(phase + freq * (i + 1)) + yOrigin; 
+                  ctx.moveTo(i , y1); 
+                  ctx.lineTo(i + 1, y2); 
               }
-              if (j < 600){
-                j = 501; 
-              }  
-              
-            }
-            // console.log(j)
-          }
-
-           if (playing == 'six'){
-            
-              
-          
-              var rand = Math.floor(Math.random() * 300); 
-              ctx.beginPath();
-              ctx.moveTo(j, move); // 50, 100
-              ctx.lineTo(j+rand, move+rand); // 100, 150
-              ctx.lineTo(j-rand, move+rand); // 100, 200
-              ctx.lineTo(j, move-rand); // 50, 250
-              
-              ctx.closePath();
-
-
-             var color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',0.1';
-             
-              ctx.strokeStyle ='rgba('+color_in+')';
               ctx.stroke();
               c = c + 4;
-              b = b + 2; 
+          } else { 
+              if (j > 1100) {
+                  j = canvasHeight;
+              }
+              if (j < 600){
+                  j = 501; 
+              }  
+          
           }
+          
+      }
+
+      if (playing == 'six'){
+          var rand = Math.floor(Math.random() * 300); 
+          ctx.beginPath();
+          ctx.moveTo(j, move); // 50, 100
+          ctx.lineTo(j+rand, move+rand); // 100, 150
+          ctx.lineTo(j-rand, move+rand); // 100, 200
+          ctx.lineTo(j, move-rand); // 50, 250
+          ctx.closePath();
+          var color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',0.1';
+          ctx.strokeStyle ='rgba('+color_in+')';
+          ctx.stroke();
+          c = c + 4;
+          b = b + 2; 
+      }
 
       if (playing == 'py'){
-      
-       var lastend = 0;
-          
-
+          var lastend = 0;
           ctx.beginPath();
           var color_in = pix_row_zoom[c]+','+pix_row_zoom[c+1]+','+pix_row_zoom[c+2]+',1';
           ctx.fillStyle ='rgba('+color_in+')';
           lastend = j * 0.0001 + b;
           thisend = lastend + (Math.PI * j * (j / 100000000)) 
           ctx.moveTo(canvas.width / 2 + lastend, 360 + thisend);
-          
-          
           // Arc Parameters: x, y, radius, startingAngle (radians), endingAngle (radians), antiClockwise (boolean)
           ctx.arc(canvas.width / 2, 360, canvas.height, lastend, thisend, false);
           // ctx.lineTo(canvas.width / 4, canvas.height / 4);
           ctx.fill();
-          
-         
           c = c + 4;
-           b = b +  0.01
+          b = b +  0.01
       }
 
      if (playing == 'tri'){
             
-
-              var lol = 100; 
-              ctx.beginPath();
-              ctx.moveTo(400, 400); // 50, 100
-              ctx.lineTo(j+lol, 800+lol); // 100, 150
-              ctx.lineTo(j+lol, 800+lol*2); // 100, 200
-              ctx.lineTo(j, 800+lol*3); // 100, 200
-              
-              ctx.lineTo(j-lol, 800+lol*2); // 50, 250
-              ctx.lineTo(j-lol, 800+lol); // 50, 250
-              ctx.lineTo(400, 400); // 50, 100
-              ctx.closePath();
-              var color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',0.1';
-             
-              ctx.strokeStyle ='rgba('+color_in+')';
-              ctx.stroke();
-                                    ctx.beginPath();
-              ctx.moveTo(400, 400); // 50, 100
-              ctx.lineTo(j+lol, -200+lol); // 100, 150
-              ctx.lineTo(j+lol, -200+lol*2); // 100, 200
-              ctx.lineTo(j, -200+lol*3); // 100, 200
-              
-              ctx.lineTo(j-lol, -200+lol*2); // 50, 250
-              ctx.lineTo(j-lol, -200+lol); // 50, 250
-              ctx.lineTo(400, 400); // 50, 100
-              ctx.closePath();
-              var color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',0.1';
-             
-              ctx.strokeStyle ='rgba('+color_in+')';
-              ctx.stroke();
-              c = c + 4;
-              b = b + 2; 
-          }
-
-
+          var lol = 100; 
+          ctx.beginPath();
+          ctx.moveTo(400, 400); // 50, 100
+          ctx.lineTo(j+lol, 800+lol); // 100, 150
+          ctx.lineTo(j+lol, 800+lol*2); // 100, 200
+          ctx.lineTo(j, 800+lol*3); // 100, 200
+          
+          ctx.lineTo(j-lol, 800+lol*2); // 50, 250
+          ctx.lineTo(j-lol, 800+lol); // 50, 250
+          ctx.lineTo(400, 400); // 50, 100
+          ctx.closePath();
+          var color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',0.1';
+         
+          ctx.strokeStyle ='rgba('+color_in+')';
+          ctx.stroke();
+                                ctx.beginPath();
+          ctx.moveTo(400, 400); // 50, 100
+          ctx.lineTo(j+lol, -200+lol); // 100, 150
+          ctx.lineTo(j+lol, -200+lol*2); // 100, 200
+          ctx.lineTo(j, -200+lol*3); // 100, 200
+          
+          ctx.lineTo(j-lol, -200+lol*2); // 50, 250
+          ctx.lineTo(j-lol, -200+lol); // 50, 250
+          ctx.lineTo(400, 400); // 50, 100
+          ctx.closePath();
+          var color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',0.1';
+         
+          ctx.strokeStyle ='rgba('+color_in+')';
+          ctx.stroke();
+          c = c + 4;
+          b = b + 2; 
+          
       }
+
       if (playing == 'inter'){
           var c = 0; 
           var b = 0; 
-
           for (j = 0; j < canvasHeight; j = j + 1) {
-
               ctx.beginPath();
               color_in = pix_row_zoom[c]+','+pix_row_zoom[c+1]+','+pix_row_zoom[c+2]+',0.3';
-
               ctx.moveTo(j, 0);
-               var line_h = Math.floor(Math.random() * 1000);
-            ctx.lineTo(j, line_h);
-              
-              ctx.strokeStyle ='rgba('+color_in+')';
-              
-              ctx.stroke();
-              
+              var line_h = Math.floor(Math.random() * 1000);
+              ctx.lineTo(j, line_h);              
+              ctx.strokeStyle ='rgba('+color_in+')';              
+              ctx.stroke();              
               c = c + 4;
               b = b + 2; 
-            
-
           }
       }
 
       if (playing == 'midlines'){
           var c = 0; 
           var b = 0; 
-           
-
           for (j = 0; j < canvasHeight; j = j + 1) {
-            if (j > 600) {
-              ctx.beginPath();
-              color_in = pix_row_zoom[c]+','+pix_row_zoom[c+1]+','+pix_row_zoom[c+2]+',0.3';
-              ctx.moveTo(0,j);
-              ctx.lineTo(canvasWidth, j);
-              ctx.strokeStyle ='rgba('+color_in+')';
-              ctx.stroke();
-              c = c + 4;
-              b = b + 2; 
-            } else {
-              j = 700; 
-            }
-
+              if (j > 600) {
+                  ctx.beginPath();
+                  color_in = pix_row_zoom[c]+','+pix_row_zoom[c+1]+','+pix_row_zoom[c+2]+',0.3';
+                  ctx.moveTo(0,j);
+                  ctx.lineTo(canvasWidth, j);
+                  ctx.strokeStyle ='rgba('+color_in+')';
+                  ctx.stroke();
+                  c = c + 4;
+                  b = b + 2; 
+              } else {
+                  j = 700; 
+              }
           }
       }
 
       if (playing == 'inbetween'){
-      var h = 1200
-           
-      for (j = 0; j < canvasHeight; j = j + 1) {
+          var h = 1200
+          for (j = 0; j < canvasHeight; j = j + 1) {
 
               if (j < canvasHeight/2 - 50) {
-              var color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',0.3';
-              
-              ctx.beginPath();
-              ctx.moveTo(0,j);
-              ctx.lineTo(canvasWidth, j);
-              ctx.strokeStyle ='rgba('+color_in+')';
-              ctx.stroke();
-              c = c + 8;
-              h = h - 1
-              ctx.beginPath();
-              ctx.moveTo(0,h);
-              ctx.lineTo(canvasWidth, h);
-              ctx.strokeStyle ='rgba('+color_in+')';
-              ctx.stroke();
+                  var color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',0.3';
+                  
+                  ctx.beginPath();
+                  ctx.moveTo(0,j);
+                  ctx.lineTo(canvasWidth, j);
+                  ctx.strokeStyle ='rgba('+color_in+')';
+                  ctx.stroke();
+                  c = c + 8;
+                  h = h - 1
+                  ctx.beginPath();
+                  ctx.moveTo(0,h);
+                  ctx.lineTo(canvasWidth, h);
+                  ctx.strokeStyle ='rgba('+color_in+')';
+                  ctx.stroke();
               } else if (j < canvasHeight/2 + 50) {
-                ctx.beginPath();
-                ctx.moveTo(0,j);
-                ctx.lineTo(canvasWidth, j);
-                ctx.strokeStyle ='rgba(0,0,0,1)';
-                ctx.stroke();
-                c = c + 8;
-                h = h - 1
+                  ctx.beginPath();
+                  ctx.moveTo(0,j);
+                  ctx.lineTo(canvasWidth, j);
+                  ctx.strokeStyle ='rgba(0,0,0,1)';
+                  ctx.stroke();
+                  c = c + 8;
+                  h = h - 1
               } else {
-                j = canvasHeight
-
-
+                  j = canvasHeight
               }
           }
-
-         
       }
       if (playing == 'inbetween2'){
-      var w = 1200
-           
-      for (j = 0; j < canvasHeight; j = j + 1) {
-
+          var w = 1200 
+          for (j = 0; j < canvasHeight; j = j + 1) {
               if (j < canvasWidth/2 +10) {
-              var color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',0.3';
-              
-              ctx.beginPath();
-              ctx.moveTo(j,0);
-              ctx.lineTo(j, canvasHeight);
-              ctx.strokeStyle ='rgba('+color_in+')';
-              ctx.stroke();
-              c = c + 8;
-              w = w - 1
-              ctx.beginPath();
-              ctx.moveTo(w, 0);
-              ctx.lineTo(w, canvasHeight);
-              ctx.strokeStyle ='rgba('+color_in+')';
-              ctx.stroke();
+                  var color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',0.3';
+                  
+                  ctx.beginPath();
+                  ctx.moveTo(j,0);
+                  ctx.lineTo(j, canvasHeight);
+                  ctx.strokeStyle ='rgba('+color_in+')';
+                  ctx.stroke();
+                  c = c + 8;
+                  w = w - 1
+                  ctx.beginPath();
+                  ctx.moveTo(w, 0);
+                  ctx.lineTo(w, canvasHeight);
+                  ctx.strokeStyle ='rgba('+color_in+')';
+                  ctx.stroke();
               } else if (j < canvasWidth/2 -10) {
-                ctx.beginPath();
-                ctx.moveTo(0,j);
-                ctx.lineTo(canvasWidth, j);
-                ctx.strokeStyle ='rgba(0,0,0,1)';
-                ctx.stroke();
-                c = c + 8;
-                h = h - 1
+                  ctx.beginPath();
+                  ctx.moveTo(0,j);
+                  ctx.lineTo(canvasWidth, j);
+                  ctx.strokeStyle ='rgba(0,0,0,1)';
+                  ctx.stroke();
+                  c = c + 8;
+                  h = h - 1
               } else {
-                j = canvasHeight
-
-
+                  j = canvasHeight
               }
-          }
-
-         
+          }      
       }
+
       if (playing == 'midlines' ){
           var c = 0; 
           var b = 0; 
-           
-
           for (j = 0; j < canvasHeight; j = j + 1) {
           
               ctx.beginPath();
@@ -867,12 +982,9 @@ function drawProcess() {
               ctx.stroke();
               c = c + 4;
               b = b + 2; 
-            
-
-          
+          }
       }
-      }
-         if (playing == 'drips'){
+      if (playing == 'drips'){
             
             for (k=0; k<20; k++) {
               var rand = Math.floor(Math.random() * 1200);
@@ -922,8 +1034,8 @@ function drawProcess() {
             ctx.putImageData(newFrame, 0, 0);
             
           }
- row = row + 1;    
-    if (row > 900) { // imgHeight
+    row = row + 1;    
+    if (row > 100) { // imgHeight
       row = 0; 
       clearTimeout(timeOut); 
       nextImage();
@@ -975,12 +1087,12 @@ function drawProcess() {
           pixelArray_temp = pixelArray;
           
           for (i = 0; i < canvasWidth * 4; i = i + 4) {
-            var index = i + (j * imageData.width); 
-            newFrame.data[index+0] = pix_row2[i] // r
-            newFrame.data[index+1] = pix_row2[i+1] // g
-            newFrame.data[index+2] = pix_row2[i+2] // b
-            newFrame.data[index+3] = pix_row2[i+3] // a          
-            // setPixel(newData, x, y, r, g, b, 255); // 255 opaque
+              var index = i + (j * imageData.width); 
+              newFrame.data[index+0] = pix_row2[i] // r
+              newFrame.data[index+1] = pix_row2[i+1] // g
+              newFrame.data[index+2] = pix_row2[i+2] // b
+              newFrame.data[index+3] = pix_row2[i+3] // a          
+              // setPixel(newData, x, y, r, g, b, 255); // 255 opaque
         }
       }
 
@@ -995,16 +1107,18 @@ function drawProcess() {
         }
     }
 
-    if (row > 900) { // imgHeight
-      row = 0; 
-      nextImage(); 
+    if (row > 100) { // imgHeight
+        row = 0; 
+        nextImage(); 
     } else {
-      var timeOut = setTimeout(function(){ rect(); }, the_speed);
+        var timeOut = setTimeout(function(){ rect(); }, the_speed);
     }
   }
 
   var grayscalebtn = document.getElementById('grayscalebtn');
   grayscalebtn.addEventListener('click', rect);
+  var first_tune = document.getElementById('first_tune');
+  first_tune.addEventListener('click', function() { playing = 'first_tune' });
   var next = document.getElementById('next');
   next.addEventListener('click', nextImage);
   var room = document.getElementById('room');
