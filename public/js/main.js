@@ -13,7 +13,8 @@ var saveimages = true;
 var folder = "1024"
 var old_img = ''
 var rectang = 1024;
-var playing = 'histogram'
+var playing = 'histosgram';
+var playing_sound = "first_tune"; 
 var zoom = 0;
 var move = 0;
 var input_text = "index preface divisions thanks method question"
@@ -23,23 +24,30 @@ var first_pass = true;
 var pixelArray = ''
 var similey = ''
 var zooming = 'base'
+var c_paning = 'false'
 var wavelength= 100,
     amplitude= 10,
     phase= 90,
     width= 1200,
     thickness= 2;
-var threshold = 20; 
+var threshold = 40; 
 var anti_threshold = 0; 
 var collect_tones = true; 
-var note_collation = []
+var note_collation = [];
+var bright_note_collation = [];
+var dark_note_collation = [];
 var drum_index = 0; 
 var drums = true; 
 var base_index = 0; 
 var soundsys = false; 
-var oscillator = true; 
+var oscillator = true;  
 var osc_partials = [];
+var diff = 100; 
+var old_diff = 110;
+var drum_list = []
 var duration = 0.8;
 var time = 0;
+
 var velocity = 0.2;
 var height = amplitude * 2;
 var move_wave = 0; 
@@ -55,25 +63,40 @@ var color_contrast = 0;
 var lastend = 0;
 var myTotal = 1000;
 var c = 0; 
-var b = 0; 
+var b = 1; 
 var soundplay = 0; 
 var collect = 0; 
 
 var kicks =  ["#","-","-","-", "#","-","-","-", "#","-","_","-", "#","-","-","-", "#","-","-","-", "#","-","-","-", "#","-","_","-", "#","-","#","-", ]; 
-var snares = ["-","-","-","-", "x","-","-","-", "-","-","-","-", "X","-","-","-", "-","-","-","-", "x","-","-","-", "-","-","-","-", "X","-","-","-", ]; 
+var snares = ["-","-","-","-", "x","-","-","-", "-","-","-","-", "x","-","-","-", "-","-","-","-", "x","-","-","-", "-","-","-","-", "x","-","-","-", ]; 
 var hats =   ["-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-",]; 
-       
+  
+var kicks_2 =  ["#","-","-","-", "#","-","-","-", "#","-","_","-", "#","-","-","-", "#","-","-","-", "#","-","-","-", "#","-","_","-", "#","-","-","-", ]; 
+var snares_2 = ["-","-","x","-", "-","-","-","-", "-","-","-","-", "x","-","-","-", "-","-","x","-", "-","-","-","-", "-","-","-","-", "x","-","-","-", ]; 
+var hats_2 =   ["-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-",]; 
+
 var ctrl_list = ["speed", "oscillator_volume", "oscillator_volume", "oscillator_spread", "oscillator_sustain"]       
 var ctrl_index = 0; 
+
+var piano_map = [1,1,2,3,4,4,4,3,2,1,0]
 if (oscillator == true) {
     var osc = new Tone.Oscillator({
       "frequency" : 440,
       "volume" : 1
-    }).toMaster().start();
+    }).toMaster().start(); 
 }
 var synth = new Tone.PolySynth(3, Tone.Synth, {
-  "volume": 1, 
-  "oscillator" : {
+ "volume": -10,
+    "oscillator": {
+        "type": "sine"
+    },
+    "envelope": {
+        "attack": 0.001,
+        "decay": 0.1,
+        "sustain": 0.1,
+        "release": 1.2
+    }
+  /** "oscillator" : {
     "type" : "fatsawtooth",
     "count" : 3,
     "spread" : 30
@@ -85,17 +108,156 @@ var synth = new Tone.PolySynth(3, Tone.Synth, {
     "release": 0.4,
     "attackCurve" : "exponential"
   },
+**/
+
+
 }).toMaster();
 
+var squaresynth = new Tone.Synth({
+  "volume": -10, 
+      "oscillator" : {
+        "type" : "square"
+      },
+      "envelope" : {
+        "attack" : 0.01,
+        "decay" : 0.2,
+        "sustain" : 0.2,
+        "release" : 0.2,
+      }
+    }).toMaster();
+
+  var fsynth = new Tone.PolySynth(6, Tone.Synth, {
+      "oscillator" : {
+        "partials" : [0, 2, 3, 4],
+      }
+    }).toMaster();
+
+var hsynth = new Tone.PolySynth(3, Tone.Synth, {
+    "volume": -10,
+    "harmonicity": 3.999,
+    "oscillator": {
+        "type": "square"
+    },
+    "envelope": {
+        "attack": 0.03,
+        "decay": 0.3,
+        "sustain": 0.6,
+        "release": 0.7
+    },
+    "modulation" : {
+        "volume" : 1,
+        "type": "square6"
+    },
+    "modulationEnvelope" : {
+        "attack": 2,
+        "decay": 3,
+        "sustain": 0.7,
+        "release": 0.1
+    }
+}).toMaster();
+
+var sweetsynth = new Tone.PolySynth(3, Tone.Synth, {
+    "volume": -10,  
+    "portamento" : 0.0,
+    "oscillator": {
+        "type": "square4"
+    },
+    "envelope": {
+        "attack": 2,
+        "decay": 1,
+        "sustain": 0.2,
+        "release": 1.1
+    }
+ }).toMaster(); 
+   
+var steelsynth = new Tone.PolySynth(3, Tone.Synth, {
+
+    "oscillator": {
+        "type": "fatcustom",
+        "partials" : [0.2, 1, 0, 0.5, 0.1],
+        "spread" : 40,
+        "count" : 3
+    },
+    "envelope": {
+        "attack": 0.001,
+        "decay": 1.6,
+        "sustain": 0,
+        "release": 1.6
+    }, 
+}).toMaster();
+
+
+var fmsynth = new Tone.FMSynth({
+      "modulationIndex" : 12.22,
+      "envelope" : {
+        "attack" : 0.01,
+        "decay" : 0.2
+      },
+      "modulation" : {
+        "type" : "square"
+      },
+      "modulationEnvelope" : {
+        "attack" : 0.2,
+        "decay" : 0.01
+      }
+    }).toMaster();
+
+var conga = new Tone.MembraneSynth({
+      "pitchDecay" : 0.008,
+      "octaves" : 2,
+      "envelope" : {
+        "attack" : 0.0006,
+        "decay" : 0.5,
+        "sustain" : 0
+      }
+    }).toMaster();
+
+var bell = new Tone.MetalSynth({
+      "harmonicity" : 12,
+      "resonance" : 800,
+      "modulationIndex" : 20,
+      "envelope" : {
+        "decay" : 0.4,
+      },
+      "volume" : -15
+    }).toMaster();
+
+
+var lsynth = new Tone.PolySynth(4, Tone.Synth, {
+"portamento" : 0.2,
+    "oscillator": {
+        "type": "sawtooth"
+    },
+    "envelope": {
+        "attack": 0.03,
+        "decay": 0.1,
+        "sustain": 0.2,
+        "release": 0.02
+    }
+}).toMaster()
 //  PIANO
 var piano = new Tone.PolySynth(4, Tone.Synth, {
-    "volume" : 1,
+    "volume" : -10,
     "oscillator" : {
         "partials" : [1, 2, 5],
     },
     "portamento" : 0.005
 }).toMaster()
 
+
+var drop = new Tone.PolySynth(4, Tone.Synth, {
+    "oscillator": {
+        "type": "pulse",
+        "width" : 0.8
+    },
+    "envelope": {
+        "attack": 0.01,
+        "decay": 0.05,
+        "sustain": 0.2,
+        "releaseCurve" : "bounce",
+        "release": 0.4
+    }
+}).toMaster()
 var main_cord = []; 
 var the_speed = 1000;
 var note_num = 0;
@@ -147,6 +309,32 @@ var notes = [
         }
       
   ]
+  var bass = new Tone.FMSynth({
+      "harmonicity" : 1,
+      "modulationIndex" : 3.5,
+      "carrier" : {
+        "oscillator" : {
+          "type" : "custom",
+          "partials" : [0, 1, 0, 2]
+        },
+        "envelope" : {
+          "attack" : 0.08,
+          "decay" : 0.3,
+          "sustain" : 0,
+        },
+      },
+      "modulator" : {
+        "oscillator" : {
+          "type" : "square"
+        },
+        "envelope" : {
+          "attack" : 0.1,
+          "decay" : 0.2,
+          "sustain" : 0.3,
+          "release" : 0.01
+        },
+      }
+    }).toMaster();
 
    var keys = new Tone.MultiPlayer({
             urls : {
@@ -160,25 +348,99 @@ var notes = [
             fadeOut : 0.1,
         }).toMaster();
 
-    var base = new Tone.MonoSynth({
-            "volume" : -10,
-            "envelope" : {
-                "attack" : 0.1,
-                "decay" : 0.3,
-                "release" : 2,
+      var multiplayer = new Tone.MultiPlayer({
+           "volume" : -6,
+            urls : {
+                "Kick" : "./audio/505/kick.mp3",
+                "Snare" : "./audio/505/snare.mp3",
+                "P" : "./audio/505/agogoHigh.mp3",
+                "Hat" : "./audio/505/hh.mp3",
             },
-            "filterEnvelope" : {
-                "attack" : 0.001,
-                "decay" : 0.01,
-                "sustain" : 0.5,
-                "baseFrequency" : 200,
-                "octaves" : 2.6
+        }).toMaster();
+        multiplayer.probability = 0.9; 
+
+        // alt drums 
+        //and a compressor
+    var drumCompress = new Tone.Compressor({
+      "threshold" : -30,
+      "ratio" : 6,
+      "attack" : 0.3,
+      "release" : 0.1
+    }).toMaster();
+
+    var distortion = new Tone.Distortion({
+      "distortion" : 0.4,
+      "wet" : 0.4
+    });
+
+    //hats
+    var hat = new Tone.Sampler({
+      "url" : "./audio/loop/hh.mp3",
+      "volume" : -10,
+      "envelope" : {
+        "attack" : 0.001,
+        "decay" : 0.02,
+        "sustain" : 0.01,
+        "release" : 0.01
+      }
+    }).chain(distortion, drumCompress);
+
+
+    //snare
+    var snare = new Tone.Sampler({
+      "url" : "./audio/505/snare.mp3", 
+      "envelope" : {
+        "attack" : 0.01,
+        "decay" : 0.05,
+        "sustain" : 0
+      },
+    }).chain(distortion, drumCompress);
+
+    // kick 
+    var kick = new Tone.MembraneSynth({
+      "pitchDecay" : 0.01,
+      "octaves" : 6,
+      "oscillator" : {
+        "type" : "square4"
+      },
+      "envelope" : {
+        "attack" : 0.001,
+        "decay" : 0.2,
+        "sustain" : 0
+      }
+    }).connect(drumCompress);
+
+    var bass = new Tone.PolySynth(4, Tone.Synth, {
+            "volume": -10,       
+            "oscillator": {
+                "type": "fmsquare5",
+            "modulationType" : "triangle",
+                "modulationIndex" : 2,
+                "harmonicity" : 0.501
+            },
+            "filter": {
+                "Q": 1,
+                "type": "lowpass",
+                "rolloff": -24
+            },
+            "envelope": {
+                "attack": 0.01,
+                "decay": 0.1,
+                "sustain": 0.4,
+                "release": 2
+            },
+            "filterEnvelope": {
+                "attack": 0.01,
+                "decay": 0.1,
+                "sustain": 0.8,
+                "release": 1.5,
+                "baseFrequency": 50,
+                "octaves": 4.4
             }
+        
         }).toMaster();
 
-        var bassPart = new Tone.Sequence(function(time, note){
-            bass.triggerAttackRelease(note, "16n", time);
-        }, ["C2", ["C3", ["C3", "D2"]], "E2", ["D2", "A1"]]).start(0);
+    
 
      var pianoSynth = new Tone.PolySynth(4, Tone.Synth, {
             "oscillator" : {
@@ -202,6 +464,78 @@ var notes = [
     "volume": -10
 
         }).toMaster()
+
+
+//DRUMS//
+    //and a compressor
+    var drumCompress = new Tone.Compressor({
+      "threshold" : -30,
+      "ratio" : 6,
+      "attack" : 0.3,
+      "release" : 0.1
+    }).toMaster();
+    var distortion = new Tone.Distortion({
+      "distortion" : 0.4,
+      "wet" : 0.4
+    });
+    
+    //hats
+    
+    var hats = new Tone.Sampler({
+      "url" : "./audio/505/hh.mp3",
+      "volume" : -10,
+      "envelope" : {
+        "attack" : 0.001,
+        "decay" : 0.02,
+        "sustain" : 0.01,
+        "release" : 0.01
+      }
+    }).chain(distortion, drumCompress);
+    
+/**    var hatsLoop = new Tone.Loop({
+      "callback" : function(time){
+
+      },
+      "interval" : "16n",
+      "probability" : 0.8
+    }).start("1m");
+    //SNARE PART **/
+    
+    var snare = new Tone.Sampler({
+      "url" : "./audio/505/snare.mp3", 
+      "envelope" : {
+        "attack" : 0.01,
+        "decay" : 0.05,
+        "sustain" : 0
+      },
+    }).chain(distortion, drumCompress);
+    
+    /** var snarePart = new Tone.Sequence(function(time, velocity){
+
+    }, [null, 1, null, [1, 0.3]]).start(0);
+    
+    var kick = new Tone.MembraneSynth({
+      "pitchDecay" : 0.01,
+      "octaves" : 6,
+      "oscillator" : {
+        "type" : "square4"
+      },
+      "envelope" : {
+        "attack" : 0.001,
+        "decay" : 0.2,
+        "sustain" : 0
+      }
+    }).connect(drumCompress);
+
+    var kickPart = new Tone.Sequence(function(time, probability){
+      if (Math.random() < probability){
+        kick.triggerAttack("C1", time);
+      }
+    }, [1, [1, [null, 0.3]], 1, [1, [null, 0.5]], 1, 1, 1, [1, [null, 0.8]]], "2n").start(0); **/
+    
+ 
+ 
+
 
 $(function(){
 
@@ -321,7 +655,7 @@ function drawProcess() {
 
     var rect = function() {
 
-        the_speed = $( "#speed" ).val();
+        // the_speed = $( "#speed" ).val();
         var similey = document.getElementById("smile");
         var c = 0; 
         var b = 0; 
@@ -359,6 +693,7 @@ function drawProcess() {
             });
         // transpose the color index, will change rgb_a colors
         c = c + parseInt($( "#c" ).val());
+
         //time = parseInt($( "#time" ).val());
         //threshold = parseInt($( "#velocity" ).val());
         //duration = parseInt($( "#duration" ).val());
@@ -368,9 +703,192 @@ function drawProcess() {
         // set rbg color from pixel valuse 
         color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',0.8';
 
-        if (playing == 'first_tune'){
+
+        if (playing == 'histogram')  {
+                ctx.beginPath();
+                ctx.moveTo(j, canvasWidth);
+                color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',1';
+                ctx.strokeStyle ='rgba('+color_in+')';
+                var sum = Math.floor(pix_row[c] + pix_row[c+1] + pix_row[c+2]); 
+
+                ctx.lineTo(j, Math.floor(sum));
+                ctx.closePath(); 
+                ctx.stroke();
+                if (c < 4) {
+
+                    old_diff = diff / 100; 
+                    //var sum = Math.floor(pix_row[c] + pix_row[c+1] + pix_row[c+2]); 
+
+                    diff = old_diff + pix_row[c]/ old_diff; 
+                    //console.log((pix_row[c]/pix_row[c+1])*100)
+                   
+                    b = b + 1 
+                    
+                    if (b == 1) {
+                        //osc.frequency.value =Math.floor((pix_row[c]/pix_row[c+1])*100);
+                        var d_octave = (pix_row[c]/pix_row[c+1])*100 / 32
+                        octave = Math.floor(d_octave)
+                        if (octave == 0) {
+                            octave = 1; 
+                        }
+                  
+            
+                        var the_note = d_octave % 1;
+                        the_note = Math.floor(the_note  * 10); 
+
+                        // make the final note
+                        var the_final_note_1 = notes_map[the_note]+octave; 
+                        console.log(the_final_note_1)
+                        pianoSynth.triggerAttack(the_final_note_1);
+                        setTimeout(function(){ pianoSynth.triggerRelease(the_final_note_1) }, 1000);
+
+                    } else if ( b == 2 ) {
+                        //osc.frequency.value =Math.floor((pix_row[c+1]/pix_row[c+2])*100);
+                        var d_octave = (pix_row[c+2]/pix_row[c+1])*100 / 16
+                        octave = Math.floor(d_octave)
+                        if (octave == 0) {
+                            octave = 1; 
+                        }
+                  
+            
+                      var the_note = d_octave % 1;
+                      the_note = Math.floor(the_note  * 10); 
+
+                      // make the final note
+                       var the_final_note_2 = notes_map[the_note]+octave; 
+                       
+                       pianoSynth.triggerAttack(the_final_note_2);
+                       setTimeout(function(){ pianoSynth.triggerRelease(the_final_note_2) }, 1000);
+                    } else {
+                      var d_octave = (pix_row[c+2]/pix_row[c])*100 / 8
+                        octave = Math.floor(d_octave)
+                        if (octave == 0) {
+                            octave = 1; 
+                        }
+                  
+            
+                      var the_note = d_octave % 1;
+                      the_note = Math.floor(the_note  * 10); 
+
+                      // make the final note
+                       var the_final_note_3 = notes_map[the_note]+octave; 
+                       
+                       pianoSynth.triggerAttack(the_final_note_3);
+                       setTimeout(function(){ pianoSynth.triggerRelease(the_final_note_3) }, 1000);
+                        // osc.frequency.value =Math.floor((pix_row[c+2]/pix_row[c])*100);
+                        b = 1; 
+                    }
+                    if (soundplay % 64 == 0) {
+                        var f_r_octave = pix_row[c] / 32
+                        var f_g_octave = pix_row[c+1] / 32
+                        var f_b_octave = pix_row[c+2] / 32
+                        
+                        r_octave = Math.floor(f_r_octave)
+                        g_octave = Math.floor(f_g_octave)
+                        b_octave = Math.floor(f_b_octave)
+                        if (r_octave == 0) r_octave = 1; 
+                        if (g_octave == 0) g_octave = 1; 
+                        if (b_octave == 0) b_octave = 1;   
+                      
+                
+                        var r_the_note = f_r_octave % 1;
+                        r_the_note = Math.floor(r_the_note  * 10); 
+                        var g_the_note = f_g_octave % 1;
+                        g_the_note = Math.floor(g_the_note  * 10); 
+
+                        var b_the_note = f_b_octave % 1;
+                        b_the_note = Math.floor(b_the_note  * 10); 
+                        
+                        // make the final note
+                        var the_final_note_r = notes_map[r_the_note]+r_octave;
+                        var the_final_note_g = notes_map[g_the_note]+g_octave; 
+                        var the_final_note_b = notes_map[b_the_note]+b_octave;
+                        var all_notes = [the_final_note_b , the_final_note_g ,the_final_note_r ]; 
+                        //console.log(all_notes)
+
+                        for (g=0; g < all_notes.length; g++) {
+                          squaresynth.triggerAttack(all_notes[g]);
+                          //console.log(all_notes[g])
+                          
+                        }
+                        setTimeout(function(){ squaresynth.triggerRelease(); }, 1600);
+
+                    } 
+
+                }
+                
+                soundplay = soundplay + 1; 
+
+                c = c + 4
+                
+
+                if (soundplay % 512 == 0) {
+                  if (kicks_2[drum_index] == "#") {
+                          kick.triggerAttack();
+                      } 
+
+                      if (snares_2[drum_index] == "x") {
+                          snare.triggerAttack();
+                          //console.log("snare", drum_index)
+                      }
+                      if (hats_2[drum_index] == "o") {
+                          hats.triggerAttack();
+                          //console.log("hihat", drum_index)
+                      }
+                      drum_index++; 
+                      if (drum_index == 31) {
+                          drum_index = 0; 
+                      }
+                    
+                }
+
+               
+              
+              
+                if (c % 2000 == 0) {
+                    var now = Tone.context.currentTime;
+                    //console.log("this is ", now);
+                    var rand  = Math.random() * 2 ; 
+                    if (sum) {
+                    var some = Math.floor(sum/100); 
+                    oct = Math.floor(sum/40); 
+                    
+                   
+                        // conga.triggerAttackRelease("C"+oct, 0.003, 0, 0.9);
+                        // bell.frequency.setValueAtTime(300, 1, 0.5);
+                        // bell.triggerAttack(1);
+                    // synth.triggerAttackRelease("C"+oct, 0.003, 0, 0.9);
+                    }
+                    if (playing == 'histosgram') {
+                        // osc.frequency.value = sum * Math.exp(.057762265 * (440 - 69.)); 
+                        oct = Math.floor(sum/40); 
+                        //console.log(oct)
+                        for(var i = 0; i < 10; i++) {
+                            synth.triggerAttackRelease(notes_map[i]+oct, 0.003, 0, 0.9);
+                        }
+                        for(var i = 6; i > 10; i--) {
+                            synth.triggerAttackRelease(notes_map[i]+oct, 0.003, 0, 0.9);
+                        }
+                  }
+              }                 
+
+            
+
+        } // end of histogram
+
+        if (playing_sound == 'first_tune'){
           // change 64 128 265
-          if (c % 64 == 0) {
+          ctx.beginPath();
+          //color_in = brightness+','+brightness+','+brightness+',1';
+          color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',1';
+          ctx.moveTo(j, 0);
+          ctx.lineTo(j+256, 0);
+          ctx.lineTo(j+256, canvasWidth);
+          ctx.lineTo(j, canvasWidth);
+          ctx.lineTo(j, 0);
+          ctx.fillStyle ='rgba('+color_in+')';
+          ctx.fill();
+          if (c % 32 == 0) {
             
               var brightness_1 = (0.2126*pix_row[c] + 0.7152*pix_row[c+1] + 0.0722*pix_row[c+2]) 
               var brightness = (pix_row[c] + pix_row[c+1] + pix_row[c+2]);
@@ -390,6 +908,7 @@ function drawProcess() {
               }
 
               var brightness = Math.floor((pix_row[c]  + pix_row[c+1]  +  pix_row[c + 2]) / 3 || 100);
+              the_speed = brightness*2; 
               
               // var brightness = pix_row[c]; 
               var harm = pix_row[c] * (255 / 12); // 20 -> 5000
@@ -399,11 +918,17 @@ function drawProcess() {
               
               // make 8 an octave number from j, d_octave is used to make the note within the octave 
               // higher number less octaves 
-              var d_octave = j / 260
-              octave = Math.floor(d_octave+1)
+              var d_octave = j / 160
+              octave = Math.floor(d_octave)
+              if (octave == 0) {
+                octave = 1; 
+              }
               
               // only play note it the brightness is lower then the set threshold
               if (brightness/2 < threshold) {
+
+
+                  drum_list.push(j);
                   
                   // get the note with in the octave from the decimals 
                   var the_note = d_octave % 1;
@@ -462,6 +987,286 @@ function drawProcess() {
                   }
               }
 
+           
+
+              // console.log(color_in, collect, pix_row[1])
+              //if (pix_row[1] > 60) {
+                  // collect = collect + 1; 
+              //}
+
+              
+              var z = c % 5000;
+              soundplay = soundplay + 1; 
+              if (soundplay % 512 == 0) {
+                // drums
+                  if (drums == true) { 
+                      if (drum_list.length > 1) {
+                      // console.log("-----", drum_list); 
+              
+                        
+                          for (a=0; a < drum_list.length; a++) {
+                             if (c_paning == true) {
+                                c++
+                             }                        
+                             if (drum_index % 4 == 1) {
+                                kick.triggerAttack(note_collation[drum_list.length-1]);
+                                // console.log("H", drum_list[a]/600)
+                               
+                             }
+                             if (drum_index % 4 == 0) {
+                                kick.triggerAttack(note_collation[drum_list.length]);
+                                // console.log("S", drum_list[a]/600)
+                             }
+                             if (drum_index % 8 == 4) {
+                                // kick.triggerAttack(note_collation[drum_list.length-2]);
+                             }
+
+                              
+                             drum_index = drum_index + 1; 
+                             if (drum_index > 32)  {
+                                drum_index = 0; 
+                             }
+                            }
+                        }
+                    }
+                    var parts = [1, 0.2]
+                    for (x=0; x < drum_list.length; x++) {
+                        parts.push(drum_list[x]/160); 
+                    }
+                    drum_list = [];
+
+                  }
+              
+              //console.log(note_collation, rand)
+
+              if (soundplay % 4096/6 == 0) {
+                
+                  if (drum_index == 16) {
+                     // piano.triggerAttack(note_collation, 1);
+                  }
+
+                  // console.log(note_collation)
+                  // https://www.audiotool.com/app
+                  // var scale = Tonal.scale('C oriental')
+                  // var harm = Tonal.harmonize(note_collation, 'C')
+                  // console.log(harm)
+                  // ctx.fillText(anti_threshold  + "rgb test: "+row , 400, 400);
+                  var one = "two"; 
+                  if (one == "two") {
+                      if (note_collation.length > 7) {
+                           for (i=note_collation.length+1; i > 2; i = i - 1) {
+                              if (i < 6) {
+                                  hsynth.triggerAttack(note_collation[piano_map[i]]);
+                              } else {
+                                  hsynth.triggerAttack(note_collation[i], 1);
+                              }
+                          } 
+                      } else if (note_collation.length > 1) {
+                          for (i=note_collation.length+1; i > 2; i = i - 1) {
+                              //for (i=0; i < note_collation.length; i= i + 1) {
+                              // or pianoSynth, synth, steelsynth
+                              // more file:///Users/pato/node/Presets/index.html
+                              // this_note = Tonal.transpose(note_collation[i], note_collation[i+1])
+                              // console.log(this_note)
+                              hsynth.triggerAttack(note_collation[i], 1);
+
+                          } 
+                      } else {
+                          synth.triggerAttackRelease("C3", undefined, 2, 1);
+                      }
+                  } else {
+                      synth.triggerAttackRelease(note_collation, undefined, 2, 1);
+                      console.log(note_collation, threshold)
+                      
+                      // synth.triggerRelease(note_collation);
+                  }  
+                  console.log(note_collation, threshold)
+                  if (note_collation.length > 20) {
+                      threshold = threshold - 1; 
+                  }
+                  if (note_collation.length < 6) {
+                      threshold = threshold + 1; 
+                  }
+                  // console.log(brightness/2, " < ",  threshold, note_collation.length, note_collation, )
+                  
+                  note_collation = []; 
+                  
+                  // console.log("----------")
+                  
+                  collect = 0; 
+                  color_contrast = 0;
+                  // console.log(brightness)
+                  if (oscillator == true) {
+                      // console.log(brightness)
+                      
+                          // osc.frequency.rampTo(brightness/1.7, 1)
+                          osc.frequency.value = brightness/5
+                          
+                          osc.partials = parts;
+                          console.log(parts); 
+        
+                  } 
+                  brightness = 0; 
+              } 
+              c = c + 4; 
+        } // end of music one 
+      if (playing_sound == 'second_tune'){
+           ctx.beginPath();
+              //color_in = brightness+','+brightness+','+brightness+',1';
+              color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',1';
+              ctx.moveTo(j, 0);
+              ctx.lineTo(j+256, 0);
+              ctx.lineTo(j+256, canvasWidth);
+              ctx.lineTo(j, canvasWidth);
+              ctx.lineTo(j, 0);
+              ctx.fillStyle ='rgba('+color_in+')';
+              ctx.fill();  
+           // change 64 128 265 
+          if (c % 16 == 0) {
+            if (j < 414) {
+              brightness = Math.floor((pix_row[c]  + pix_row[c+1]  +  pix_row[c + 2]) / 3) || 100;
+         
+              // make 8 an octave number from j, d_octave is used to make the note within the octave 
+              // higher number less octaves 
+              var d_octave = j / 260
+              octave = Math.floor(d_octave+1)
+                 
+              // get the note with in the octave from the decimals 
+              the_note = Math.floor(d_octave * 10+1); 
+        
+              // make the final note
+              // console.log(notes_map[the_note]+octave, j)
+              var the_final_note = notes_map[the_note]+octave || "F1"; 
+              //console.log(brightness/2, threshold+50)
+              // only play note it the brightness is lower then the set threshold 
+              if (brightness/2 > threshold+40) {
+                  ctx.fillText("#" , j , 200);
+                  
+                  if (bright_note_collation.indexOf(the_final_note) == -1) {
+                      //console.log(the_final_note)
+                      bright_note_collation.push(the_final_note); 
+                      //console.log(bright_note_collation)
+                  }     
+              }
+              
+              // only play note it the brightness is lower then the set threshold
+              if (brightness/2 < threshold) {
+                  ctx.fillText("+" , j , 200);
+
+                  // trigger a note  ... (note, durration, time, velocity)
+                  if (dark_note_collation.indexOf(the_final_note) == -1) {
+
+                      dark_note_collation.push(the_final_note); 
+                  }   
+              } 
+
+             }
+             
+          
+              }
+
+              soundplay = soundplay + 1; 
+
+              // console.log(bright_note_collation)
+              //console.log(note_collation, rand)
+              if (soundplay % 4096 == 0) {
+                 synth.triggerAttackRelease("C3", undefined, ["1n"], 0.9);
+                 var one = 'one'
+
+                 // synth.triggerAttackRelease("C3", undefined, ["1n"], 0.9);
+                 var now = Tone.context.currentTime;
+                 if (one == 'one'){
+                  if (dark_note_collation.length > 1) {
+                   
+                       for (i=0; i < dark_note_collation.length; i = i + 1) {
+                          var now = Tone.context.currentTime;
+                          console.log(now, now+i)
+                          synth.triggerAttack(dark_note_collation[i]);
+                          console.log(dark_note_collation[i])
+                        
+                            
+                        }  
+                  } 
+                  if (bright_note_collation.length == 1) {
+                    var now = Tone.context.currentTime;
+                      for (i=0; i < bright_note_collation.length; i = i + 1) {
+                      
+                              fmsynth.triggerAttack(bright_note_collation[i]);
+                       
+                            
+                      }  
+                  } 
+                }
+                // console.log(bright_note_collation, "---",  dark_note_collation)
+                if (bright_note_collation.length == 0) {
+                    synth.triggerAttack(dark_note_collation, 1);// , undefined, ["1n"], 0.9);
+                } else {
+                    synth.triggerAttack(bright_note_collation, 1); 
+                }
+                if (dark_note_collation.length == 0) {
+                    synth.triggerAttack(bright_note_collation, 1);  // , undefined, ["1n"], 0.9);
+                } else {
+                   synth.triggerAttack(dark_note_collation, 1);
+                }
+
+                  if (dark_note_collation.length > 6) {
+                      threshold = threshold - 3; 
+                  }
+                  if (dark_note_collation.length < 2) {
+                      threshold = threshold + 2; 
+                  }
+                  
+                  dark_note_collation = []; 
+                  bright_note_collation = []; 
+                  
+                  // console.log("----------")
+                  
+                  if (oscillator == true) {
+                      // console.log(brightness)
+                      osc.frequency.value = Math.floor(brightness/4); 
+                      
+                  } 
+                  brightness = 0; 
+                      
+                  
+              } 
+              if (c % 2048 == 0) {
+                       
+                      
+                        if (drum_index % 8 == 0) {
+                            multiplayer.start("Kick", undefined);
+                            //console.log("kick", drum_index); 
+                          
+                          
+                        } 
+
+                        if (drum_index % 12  == 0) {
+                            multiplayer.start("Snare", undefined);
+                            //osc.mute = true;
+                            //console.log("snare", drum_index)
+                        }
+                        if (drum_index % 16  == 0) {
+                          // osc.mute = true;
+                            multiplayer.start("Hat", undefined);
+                            //console.log("hihat", drum_index)
+                        }
+                        drum_index++; 
+                        if (drum_index == 31) {
+                            drum_index = 0; 
+                        }
+                        //console.log("_ _", drum_index)
+                        
+                        base_index = base_index + 1; 
+                        if (base_index > notes.length-1) {
+                          base_index = 0; 
+                        }
+
+                    }
+            
+        c = c + 4
+             
+        } // end of music two 
+        if (playing == 'buttomup'){
               ctx.beginPath();
               //color_in = brightness+','+brightness+','+brightness+',1';
               color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',1';
@@ -473,103 +1278,7 @@ function drawProcess() {
               ctx.stroke();
               c = c + 4;
               b = b + 2; 
-
-              // console.log(color_in, collect, pix_row[1])
-              //if (pix_row[1] > 60) {
-                  // collect = collect + 1; 
-              //}
-
-              
-              var z = c % 5000;
-              soundplay = soundplay + 1; 
-
-              // drums
-              if (drums == true) { 
-                  if (soundplay % 512 == 0) {
-                     
-                      
-                      if (kicks[drum_index] == "#") {
-                          keys.start("K", undefined);
-                          //console.log("kick", drum_index); 
-                          if (note_collation[0]) {
-
-                          if (note_collation[0].slice(-1) < 2) {
-                              base.triggerAttackRelease(note_collation[0], undefined, 0.9);
-                          }
-                          }
-                      } 
-
-                      if (snares[drum_index] == "x") {
-                          keys.start("S", undefined);
-                          //console.log("snare", drum_index)
-                      }
-                      if (hats[drum_index+1] == "o") {
-                          keys.start("H", undefined);
-                          //console.log("hihat", drum_index)
-                      }
-                      drum_index++; 
-                      if (drum_index == 31) {
-                          drum_index = 0; 
-                      }
-                      //console.log("_ _", drum_index)
-                      
-                      base_index = base_index + 1; 
-                      if (base_index > notes.length-1) {
-                        base_index = 0; 
-                      }
-
-                  }
-              }
-              //console.log(note_collation, rand)
-              if (soundplay % 4096 == 0) {
-                  if (drum_index == 16) {
-                      piano.triggerAttackRelease(note_collation, undefined, 0, 1);
-                  }
-
-                  //console.log(note_collation, rand)
-                  
-                  // ctx.fillText(anti_threshold  + "rgb test: "+row , 400, 400);
-                  if (note_collation.length > 0) {
-                       for (i=note_collation.length+1; i > 0; i= i - 1) {
-                      //for (i=0; i < note_collation.length; i= i + 1) {
-                            // or pianoSynth
-                            synth.triggerAttackRelease(note_collation[i], undefined, ["1n"], 0.9);
-                      } 
-                    //console.log(note_collation[i])
-                  } else {
-                      synth.triggerAttackRelease("C3", undefined, 2, 1);
-                  }
-                  
-                  if (note_collation.length > 10) {
-                    threshold = threshold - 3; 
-                  }
-                  if (note_collation.length < 6) {
-                    threshold = threshold + 2; 
-                  }
-                  // console.log(brightness/2, " < ",  threshold, note_collation.length, note_collation, )
-                  
-                  note_collation = []; 
-                  
-                  // console.log("----------")
-                  
-                  collect = 0; 
-                  color_contrast = 0;
-                  // console.log(brightness)
-                   if (oscillator == true) {
-                    // console.log(brightness)
-                    if (brightness > 100) {
-                  // osc.frequency.rampTo(brightness/1.7, 1)
-                  osc.frequency.value = brightness/2-100
-                } else {
-                  osc.frequency.value = brightness/2
-                }
-              } 
-                  brightness = 0; 
-              } 
-
-
-             
-        } // end of music
+        }
 
         if (playing == 'inters'){
             ctx.beginPath();
@@ -601,46 +1310,7 @@ function drawProcess() {
             ctx.stroke();  
         }
 
-        if (playing == 'histogram')  {
-                ctx.beginPath();
-                ctx.moveTo(j, canvasWidth);
-                color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',1';
-                ctx.strokeStyle ='rgba('+color_in+')';
-                var sum = Math.floor(pix_row[c] + pix_row[c+1] + pix_row[c+2]); 
-                ctx.lineTo(j, Math.floor(sum/1.3));
-                c = c + 4
-                ctx.closePath(); 
-                ctx.stroke();
-                if (sum) {
-                 if (c % 128 == 0) { 
-               synth.triggerAttackRelease("C"+Math.floor(sum/90), undefined, 0, 0.2);
-             }
-              if (c % 400 == 0) { 
-                
-              synth.triggerAttackRelease("G"+Math.floor(sum/90), 0.003, 0, 0.2);
-                }
-              }
-            if (c % 32 == 0) {
-              if (sum) {
-                osc_partials.push(sum);
-                console.log(sum/90)
-                
-              
-            
-            }
-          }
 
-            soundplay = soundplay + 1; 
-            if (soundplay == 4096) {
-                  oso_partials = []; 
-                  
-                  soundplay = 0; 
-                if (oscillator == true) {
-                osc.frequency.value = sum/16;
-               }
-              } 
-
-        }
 
       
         if (playing == 'similey')  {
@@ -934,7 +1604,7 @@ function drawProcess() {
           var h = 1200
           for (j = 0; j < canvasHeight; j = j + 1) {
 
-              if (j < canvasHeight/2 - 50) {
+              if (j < canvasHeight/2 + 10) {
                   var color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',0.3';
                   
                   ctx.beginPath();
@@ -949,7 +1619,7 @@ function drawProcess() {
                   ctx.lineTo(canvasWidth, h);
                   ctx.strokeStyle ='rgba('+color_in+')';
                   ctx.stroke();
-              } else if (j < canvasHeight/2 + 50) {
+              } else if (j < canvasHeight/2 - 10) {
                   ctx.beginPath();
                   ctx.moveTo(0,j);
                   ctx.lineTo(canvasWidth, j);
@@ -1060,7 +1730,7 @@ function drawProcess() {
             
           }
     row = row + 1;    
-    if (row > 100) { // imgHeight
+    if (row > 400) { // imgHeight
       row = 0; 
       clearTimeout(timeOut); 
       nextImage();
@@ -1140,8 +1810,8 @@ function drawProcess() {
     }
   }
 
-  var grayscalebtn = document.getElementById('grayscalebtn');
-  grayscalebtn.addEventListener('click', rect);
+  var startplaying = document.getElementById('start');
+  startplaying.addEventListener('click', rect);
   var first_tune = document.getElementById('first_tune');
   first_tune.addEventListener('click', function() { playing = 'first_tune' });
   var next = document.getElementById('next');
@@ -1170,7 +1840,8 @@ function drawProcess() {
   py.addEventListener('click', function() { playing = 'py' }); 
   var inbetween = document.getElementById('inbetween');
   inbetween.addEventListener('click', function() { playing = 'inbetween' }); 
-    
+  var inbetween2 = document.getElementById('inbetween2');
+  inbetween2.addEventListener('click', function() { playing = 'inbetween2' });     
    
 }
 
