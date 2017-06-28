@@ -39,6 +39,7 @@
     <script type="text/javascript" src="js/jquery.js"></script>
     <script type="text/javascript"  src="js/jquery-ui.js"></script>
     <script type="text/javascript" src="js/Tone.min.js"></script>
+    <script type="text/javascript" src="js/tonal.min.js"></script>
     <script type="text/javascript" src="js/main.js"></script>
 <script>
   $( function() {
@@ -54,8 +55,9 @@
     $( "#amount" ).val( "$" + $( "#slider-range" ).slider( "values", 0 ) +
       " - $" + $( "#slider-range" ).slider( "values", 1 ) );
   } );
-
+  var what_num_play = 0; 
   $(document).keypress(function(e) {
+    
     console.log(e.which); 
       if(e.which == 101) {
           var curr = $( "#canvasWidth" ).val()
@@ -124,8 +126,8 @@
           } else {
               vals = parseFloat(vals) + 0.1; 
           }
-          $( "#"+what ).val(vals)
-          
+          $( "#"+what ).val(vals); 
+          $( "#contrl_this_value" ).text(": "+ vals); 
 
 
       }
@@ -134,12 +136,23 @@
           var vals = $( "#"+what ).val()
            if (what == "speed") {
               vals = parseFloat(vals) - 1; 
-          } else {
+          } else {  
               vals = parseFloat(vals) - 0.1; 
           } 
           $( "#"+what ).val(vals)
-          
+           $( "#contrl_this_value" ).text(": "+ vals); 
          
+
+      }
+      if(e.which == 106) {
+          
+          console.log(play_list[what_num_play])
+          playing_sound = play_list[what_num_play]
+          if (what_num_play > play_list.length-2) {
+              what_num_play = 0; 
+          }
+          what_num_play = what_num_play + 1;
+          
 
       }
     
@@ -148,9 +161,17 @@
   </head>
   <body>
     <div>
-        <input id="grayscalebtn" value="Grayscale" type="button">
+        <input id="start" value="start" type="button">
         <input id="next" value="next" type="button">
-        <input id="first_tune" value="first_tune" type="button">
+        <span> | </span><span id="contrl_this"><small>Press L</small></span><span id="contrl_this_value"></span>
+  
+
+    </div>
+    <div class="canvas-container">
+        <canvas id="canvas" class="center" width="1024px" height="1000px"></canvas>
+        <div class="info"> Art 1923 </div>
+    </div>
+    <input id="first_tune" value="first_tune" type="button">
         <input id="room" value="room" type="button">
         <input id="inter" value="inter" type="button">
         <input id="arch" value="arch" type="button">
@@ -163,10 +184,11 @@
         <input id="spiral" value="spiral" type="button"> 
         <input id="py" value="py" type="button"> 
         <input id="inbetween" value="inbetween" type="button">
+        <input id="inbetween2" value="inbetween2" type="button">
         <input type="text" id="canvasWidth" value="1200">
         <input type="text" id="canvasHeight" value="1200">
         <input type="text" id="c" value="0">
-        Speed<input type="text" id="speed" value="500">
+        Speed<input type="text" id="speed" value="200">
         T: <input type="text" id="time" value="0.001">
         V:<input type="text" id="velocity" value="50">
         D:<input type="text" id="duration" value="0.001">
@@ -175,14 +197,6 @@
         Count: <input type="text" id="oscillator_volume" value="3">
         Spread: <input type="text" id="oscillator_spread" value="30">
         Sustain: <input type="text" id="oscillator_sustain" value="0.1">
-        <div id="contrl_this"></div>
-  
-
-    </div>
-    <div class="canvas-container">
-        <canvas id="canvas" class="center" width="1024px" height="1000px"></canvas>
-        <div class="info"> Art 1923 </div>
-    </div>
     <span ><img src="images/smiley_sm.png" id="smile" /></span>
     <div>
       <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">

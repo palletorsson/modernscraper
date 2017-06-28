@@ -13,8 +13,8 @@ var saveimages = true;
 var folder = "1024"
 var old_img = ''
 var rectang = 1024;
-var playing = 'histosgram';
-var playing_sound = "first_tune"; 
+var playing = 'updown';
+var playing_sound = "third_tune"; 
 var zoom = 0;
 var move = 0;
 var input_text = "index preface divisions thanks method question"
@@ -76,6 +76,8 @@ var snares_2 = ["-","-","x","-", "-","-","-","-", "-","-","-","-", "x","-","-","
 var hats_2 =   ["-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-",]; 
 
 var ctrl_list = ["speed", "oscillator_volume", "oscillator_volume", "oscillator_spread", "oscillator_sustain"]       
+var play_list = ["none", "first_tune", "second_tune", "third_tune", "histogram"]       
+
 var ctrl_index = 0; 
 
 var piano_map = [1,1,2,3,4,4,4,3,2,1,0]
@@ -655,7 +657,7 @@ function drawProcess() {
 
     var rect = function() {
 
-        // the_speed = $( "#speed" ).val();
+        the_speed = $( "#speed" ).val();
         var similey = document.getElementById("smile");
         var c = 0; 
         var b = 0; 
@@ -670,7 +672,7 @@ function drawProcess() {
         // get pixel rows on static on moving 
         var pix_row = getPixelrow(pixelArray, row);
         var pix_row_zoom =  getPixelrowzoom(pixelArray, row); 
-
+        var pix_sort =  getPixelrowzoom(pixelArray, row); 
         // get canvas height and width dynamically
         canvasWidth = $( "#canvasWidth" ).val();
         canvasHeight = $( "#canvasHeight" ).val();
@@ -697,183 +699,268 @@ function drawProcess() {
         //time = parseInt($( "#time" ).val());
         //threshold = parseInt($( "#velocity" ).val());
         //duration = parseInt($( "#duration" ).val());
-        // Loop pixel row 
-        for (j = 0; j < canvasHeight; j = j + 1) {
-
+        // Loop pixel row
+        
         // set rbg color from pixel valuse 
         color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',0.8';
 
+        var pix_row_zoom = pix_row_zoom.sort();  
+        var sum_sum = 0; 
 
-        if (playing == 'histogram')  {
-                ctx.beginPath();
-                ctx.moveTo(j, canvasWidth);
-                color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',1';
-                ctx.strokeStyle ='rgba('+color_in+')';
-                var sum = Math.floor(pix_row[c] + pix_row[c+1] + pix_row[c+2]); 
+        for (j = 0; j < canvasHeight; j = j + 1) {
 
-                ctx.lineTo(j, Math.floor(sum));
-                ctx.closePath(); 
-                ctx.stroke();
-                if (c < 4) {
-
-                    old_diff = diff / 100; 
-                    //var sum = Math.floor(pix_row[c] + pix_row[c+1] + pix_row[c+2]); 
-
-                    diff = old_diff + pix_row[c]/ old_diff; 
-                    //console.log((pix_row[c]/pix_row[c+1])*100)
-                   
-                    b = b + 1 
-                    
-                    if (b == 1) {
-                        //osc.frequency.value =Math.floor((pix_row[c]/pix_row[c+1])*100);
-                        var d_octave = (pix_row[c]/pix_row[c+1])*100 / 32
-                        octave = Math.floor(d_octave)
-                        if (octave == 0) {
-                            octave = 1; 
-                        }
-                  
+        if (playing_sound == 'third_tune') {
             
+            ctx.beginPath();
+            ctx.moveTo(j, canvasWidth);
+            color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',1';
+            ctx.strokeStyle ='rgba('+color_in+')';
+            var sum = Math.floor(pix_row[c] + pix_row[c+1] + pix_row[c+2]); 
+
+            ctx.lineTo(j, 0);
+            ctx.closePath(); 
+            ctx.stroke();
+            // lets try piano mapping 
+
+            if (c % 512 == 0) {
+                var r = pix_sort[c];
+                var g = pix_sort[c+1]
+                var b = pix_sort[c+2]
+
+                var avg = Math.floor((r+g+b)/3);
+                var colorSum = colorSum +  avg;
+
+                var brightness = Math.floor(colorSum / j);
+
+            } 
+
+            
+            
+            
+            var p_sum = Math.floor(pix_row[c] + pix_row[c+1] + pix_row[c+2]); 
+            // the_speed = 200
+            //var sum = Math.floor(pix_sort[b] + pix_sort[b+1] + pix_sort[b+2]); 
+           
+            if (sum < 1023) {
+            
+                
+                if (c % 512 == 0 && sum != 0) {
+                    
+                    sum = p_sum + sum;
+                    if (sum > 1000) {
+                        sum = 100; 
+                    }
+
+                    //pianoSynth.triggerAttack("F1");
+                    var d_octave = sum / 160
+                    var octave = Math.floor(d_octave-1)
+                    if (octave > 0) {
                         var the_note = d_octave % 1;
                         the_note = Math.floor(the_note  * 10); 
 
-                        // make the final note
-                        var the_final_note_1 = notes_map[the_note]+octave; 
-                        console.log(the_final_note_1)
-                        pianoSynth.triggerAttack(the_final_note_1);
-                        setTimeout(function(){ pianoSynth.triggerRelease(the_final_note_1) }, 1000);
-
-                    } else if ( b == 2 ) {
-                        //osc.frequency.value =Math.floor((pix_row[c+1]/pix_row[c+2])*100);
-                        var d_octave = (pix_row[c+2]/pix_row[c+1])*100 / 16
-                        octave = Math.floor(d_octave)
-                        if (octave == 0) {
-                            octave = 1; 
-                        }
-                  
-            
-                      var the_note = d_octave % 1;
-                      the_note = Math.floor(the_note  * 10); 
-
-                      // make the final note
-                       var the_final_note_2 = notes_map[the_note]+octave; 
-                       
-                       pianoSynth.triggerAttack(the_final_note_2);
-                       setTimeout(function(){ pianoSynth.triggerRelease(the_final_note_2) }, 1000);
-                    } else {
-                      var d_octave = (pix_row[c+2]/pix_row[c])*100 / 8
-                        octave = Math.floor(d_octave)
-                        if (octave == 0) {
-                            octave = 1; 
-                        }
-                  
-            
-                      var the_note = d_octave % 1;
-                      the_note = Math.floor(the_note  * 10); 
-
-                      // make the final note
-                       var the_final_note_3 = notes_map[the_note]+octave; 
-                       
-                       pianoSynth.triggerAttack(the_final_note_3);
-                       setTimeout(function(){ pianoSynth.triggerRelease(the_final_note_3) }, 1000);
-                        // osc.frequency.value =Math.floor((pix_row[c+2]/pix_row[c])*100);
-                        b = 1; 
+                        var the_final_note = notes_map[the_note]+octave; 
+                        
+                        note_collation.push(the_final_note);
+                        ctx.fillText("+"+the_final_note , j , sum);
+                        //pianoSynth.triggerAttack(the_final_note); 
+                        
                     }
-                    if (soundplay % 64 == 0) {
-                        var f_r_octave = pix_row[c] / 32
-                        var f_g_octave = pix_row[c+1] / 32
-                        var f_b_octave = pix_row[c+2] / 32
-                        
-                        r_octave = Math.floor(f_r_octave)
-                        g_octave = Math.floor(f_g_octave)
-                        b_octave = Math.floor(f_b_octave)
-                        if (r_octave == 0) r_octave = 1; 
-                        if (g_octave == 0) g_octave = 1; 
-                        if (b_octave == 0) b_octave = 1;   
-                      
+                }
+
+                 if (note_collation.length == 4 && sum != 0) {
+                   console.log(note_collation)
+                   synth.triggerAttack(note_collation)
+                   setTimeout(function(){ synth.triggerRelease(note_collation) }, 100);
+                   note_collation = []
+                 }
                 
-                        var r_the_note = f_r_octave % 1;
-                        r_the_note = Math.floor(r_the_note  * 10); 
-                        var g_the_note = f_g_octave % 1;
-                        g_the_note = Math.floor(g_the_note  * 10); 
+                             
+              }
 
-                        var b_the_note = f_b_octave % 1;
-                        b_the_note = Math.floor(b_the_note  * 10); 
-                        
-                        // make the final note
-                        var the_final_note_r = notes_map[r_the_note]+r_octave;
-                        var the_final_note_g = notes_map[g_the_note]+g_octave; 
-                        var the_final_note_b = notes_map[b_the_note]+b_octave;
-                        var all_notes = [the_final_note_b , the_final_note_g ,the_final_note_r ]; 
-                        //console.log(all_notes)
-
-                        for (g=0; g < all_notes.length; g++) {
-                          squaresynth.triggerAttack(all_notes[g]);
-                          //console.log(all_notes[g])
+             if (c % 256 == 0 && sum != 0) {
+                    kick.triggerAttack(the_final_note);
+                  } 
+              if (c % 256  && oscillator == true && sum != 0) {
+                          osc.frequency.value = octave* 10;
                           
-                        }
-                        setTimeout(function(){ squaresynth.triggerRelease(); }, 1600);
+                          
+        
+                  } 
+             c = c + 4;
+             b = b + 64; 
 
+          }      
+
+
+        
+
+        if (playing == 'histogram' || playing_sound =='histogram')  {
+            ctx.beginPath();
+            ctx.moveTo(j, canvasWidth);
+            color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',1';
+            ctx.strokeStyle ='rgba('+color_in+')';
+            var sum = Math.floor(pix_row[c] + pix_row[c+1] + pix_row[c+2]); 
+
+            ctx.lineTo(j, Math.floor(sum));
+            ctx.closePath(); 
+            ctx.stroke();
+            if (c < 4) {
+
+                old_diff = diff / 100; 
+                //var sum = Math.floor(pix_row[c] + pix_row[c+1] + pix_row[c+2]); 
+
+                diff = old_diff + pix_row[c]/ old_diff; 
+                //console.log((pix_row[c]/pix_row[c+1])*100)
+               
+                b = b + 1 
+                
+                if (b == 1) {
+                    //osc.frequency.value =Math.floor((pix_row[c]/pix_row[c+1])*100);
+                    var d_octave = (pix_row[c]/pix_row[c+1])*100 / 32
+                    octave = Math.floor(d_octave)
+                    if (octave == 0) {
+                        octave = 1; 
+                    }
+              
+        
+                    var the_note = d_octave % 1;
+                    the_note = Math.floor(the_note  * 10); 
+
+                    // make the final note
+                    var the_final_note_1 = notes_map[the_note]+octave; 
+                    console.log(the_final_note_1)
+                    pianoSynth.triggerAttack(the_final_note_1);
+                    setTimeout(function(){ pianoSynth.triggerRelease(the_final_note_1) }, 1000);
+
+                } else if ( b == 2 ) {
+                    //osc.frequency.value =Math.floor((pix_row[c+1]/pix_row[c+2])*100);
+                    var d_octave = (pix_row[c+2]/pix_row[c+1])*100 / 16
+                    octave = Math.floor(d_octave)
+                    if (octave == 0) {
+                        octave = 1; 
+                    }
+              
+        
+                  var the_note = d_octave % 1;
+                  the_note = Math.floor(the_note  * 10); 
+
+                  // make the final note
+                   var the_final_note_2 = notes_map[the_note]+octave; 
+                   
+                   pianoSynth.triggerAttack(the_final_note_2);
+                   setTimeout(function(){ pianoSynth.triggerRelease(the_final_note_2) }, 1000);
+                } else {
+                  var d_octave = (pix_row[c+2]/pix_row[c])*100 / 8
+                    octave = Math.floor(d_octave)
+                    if (octave == 0) {
+                        octave = 1; 
+                    }
+              
+        
+                  var the_note = d_octave % 1;
+                  the_note = Math.floor(the_note  * 10); 
+
+                  // make the final note
+                   var the_final_note_3 = notes_map[the_note]+octave; 
+                   
+                   pianoSynth.triggerAttack(the_final_note_3);
+                   setTimeout(function(){ pianoSynth.triggerRelease(the_final_note_3) }, 1000);
+                    // osc.frequency.value =Math.floor((pix_row[c+2]/pix_row[c])*100);
+                    b = 1; 
+                }
+                if (soundplay % 64 == 0) {
+                    var f_r_octave = pix_row[c] / 32
+                    var f_g_octave = pix_row[c+1] / 32
+                    var f_b_octave = pix_row[c+2] / 32
+                    
+                    r_octave = Math.floor(f_r_octave)
+                    g_octave = Math.floor(f_g_octave)
+                    b_octave = Math.floor(f_b_octave)
+                    if (r_octave == 0) r_octave = 1; 
+                    if (g_octave == 0) g_octave = 1; 
+                    if (b_octave == 0) b_octave = 1;   
+                  
+            
+                    var r_the_note = f_r_octave % 1;
+                    r_the_note = Math.floor(r_the_note  * 10); 
+                    var g_the_note = f_g_octave % 1;
+                    g_the_note = Math.floor(g_the_note  * 10); 
+
+                    var b_the_note = f_b_octave % 1;
+                    b_the_note = Math.floor(b_the_note  * 10); 
+                    
+                    // make the final note
+                    var the_final_note_r = notes_map[r_the_note]+r_octave;
+                    var the_final_note_g = notes_map[g_the_note]+g_octave; 
+                    var the_final_note_b = notes_map[b_the_note]+b_octave;
+                    var all_notes = [the_final_note_b , the_final_note_g ,the_final_note_r ]; 
+                    //console.log(all_notes)
+
+                    for (g=0; g < all_notes.length; g++) {
+                      squaresynth.triggerAttack(all_notes[g]);
+                      //console.log(all_notes[g])
+                      
+                    }
+                    setTimeout(function(){ squaresynth.triggerRelease(); }, 1600);
+
+                } 
+
+            }
+            
+            soundplay = soundplay + 1; 
+
+            c = c + 4
+            
+
+            if (soundplay % 512 == 0) {
+                if (kicks_2[drum_index] == "#") {
+                        kick.triggerAttack();
                     } 
 
+                if (snares_2[drum_index] == "x") {
+                    snare.triggerAttack();
+                    //console.log("snare", drum_index)
                 }
-                
-                soundplay = soundplay + 1; 
-
-                c = c + 4
-                
-
-                if (soundplay % 512 == 0) {
-                  if (kicks_2[drum_index] == "#") {
-                          kick.triggerAttack();
-                      } 
-
-                      if (snares_2[drum_index] == "x") {
-                          snare.triggerAttack();
-                          //console.log("snare", drum_index)
-                      }
-                      if (hats_2[drum_index] == "o") {
-                          hats.triggerAttack();
-                          //console.log("hihat", drum_index)
-                      }
-                      drum_index++; 
-                      if (drum_index == 31) {
-                          drum_index = 0; 
-                      }
-                    
+                if (hats_2[drum_index] == "o") {
+                    hats.triggerAttack();
+                    //console.log("hihat", drum_index)
                 }
+                drum_index++; 
+                if (drum_index == 31) {
+                    drum_index = 0; 
+                }
+                  
+            }
 
-               
-              
-              
-                if (c % 2000 == 0) {
-                    var now = Tone.context.currentTime;
-                    //console.log("this is ", now);
-                    var rand  = Math.random() * 2 ; 
-                    if (sum) {
+           
+          
+          
+            if (c % 2000 == 0) {
+                var now = Tone.context.currentTime;
+                //console.log("this is ", now);
+                var rand  = Math.random() * 2 ; 
+                if (sum) {
                     var some = Math.floor(sum/100); 
                     oct = Math.floor(sum/40); 
-                    
-                   
-                        // conga.triggerAttackRelease("C"+oct, 0.003, 0, 0.9);
-                        // bell.frequency.setValueAtTime(300, 1, 0.5);
-                        // bell.triggerAttack(1);
-                    // synth.triggerAttackRelease("C"+oct, 0.003, 0, 0.9);
+                
+
+                    // conga.triggerAttackRelease("C"+oct, 0.003, 0, 0.9);
+                    // bell.frequency.setValueAtTime(300, 1, 0.5);
+                    // bell.triggerAttack(1);
+                   // synth.triggerAttackRelease("C"+oct, 0.003, 0, 0.9);
+                }
+                if (playing == 'histosgram') {
+                    // osc.frequency.value = sum * Math.exp(.057762265 * (440 - 69.)); 
+                    oct = Math.floor(sum/40); 
+                    //console.log(oct)
+                    for(var i = 0; i < 10; i++) {
+                        synth.triggerAttackRelease(notes_map[i]+oct, 0.003, 0, 0.9);
                     }
-                    if (playing == 'histosgram') {
-                        // osc.frequency.value = sum * Math.exp(.057762265 * (440 - 69.)); 
-                        oct = Math.floor(sum/40); 
-                        //console.log(oct)
-                        for(var i = 0; i < 10; i++) {
-                            synth.triggerAttackRelease(notes_map[i]+oct, 0.003, 0, 0.9);
-                        }
-                        for(var i = 6; i > 10; i--) {
-                            synth.triggerAttackRelease(notes_map[i]+oct, 0.003, 0, 0.9);
-                        }
-                  }
-              }                 
-
-            
-
+                    for(var i = 6; i > 10; i--) {
+                        synth.triggerAttackRelease(notes_map[i]+oct, 0.003, 0, 0.9);
+                    }
+                }
+            }                 
         } // end of histogram
 
         if (playing_sound == 'first_tune'){
