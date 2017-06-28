@@ -755,11 +755,19 @@ function drawProcess() {
                     var d_octave = sum / 160
                     var octave = Math.floor(d_octave-1)
                     if (octave > 0) {
+                        // if oct > 4 light else drak
                         var the_note = d_octave % 1;
                         the_note = Math.floor(the_note  * 10); 
 
                         var the_final_note = notes_map[the_note]+octave; 
-                        
+                        // devide the octaves into two diffrent instruments
+                        if (octave < 4){
+                            dark_note_collation.push(the_final_note);
+
+                        } else {
+                            bright_note_collation.push(the_final_note);
+                        }
+                       
                         note_collation.push(the_final_note);
                         ctx.fillText("+"+the_final_note , j , sum);
                         //pianoSynth.triggerAttack(the_final_note); 
@@ -767,21 +775,25 @@ function drawProcess() {
                     }
                 }
 
-                 if (note_collation.length == 4 && sum != 0) {
-                   console.log(note_collation)
-                   synth.triggerAttack(note_collation)
-                   setTimeout(function(){ synth.triggerRelease(note_collation) }, 100);
-                   note_collation = []
+                 if (dark_note_collation.length == 4 && sum != 0) {
+                   //console.log(bright_note_collation, dark_note_collation, note_collation);
+                   sweetsynth.triggerAttack(bright_note_collation); 
+                   steelsynth.triggerAttack(dark_note_collation); 
+
+                   // setTimeout(function(){ synth.triggerRelease(note_collation) }, 100);
+                   bright_note_collation = [];
+                   dark_note_collation = []; 
+                   //note_collation = []; 
                  }
                 
                              
               }
 
              if (c % 256 == 0 && sum != 0) {
-                    kick.triggerAttack(the_final_note);
+                    //kick.triggerAttack(the_final_note);
                   } 
               if (c % 256  && oscillator == true && sum != 0) {
-                          osc.frequency.value = octave* 10;
+                         osc.frequency.value = octave* 10;
                           
                           
         
@@ -794,7 +806,7 @@ function drawProcess() {
 
         
 
-        if (playing == 'histogram' || playing_sound =='histogram')  {
+        if (playing == 'histogram' || playing_sound == 'histogram')  {
             ctx.beginPath();
             ctx.moveTo(j, canvasWidth);
             color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',1';
