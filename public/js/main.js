@@ -14,7 +14,7 @@ var folder = "1024"
 var old_img = ''
 var rectang = 1024;
 var playing = 'updown';
-var playing_sound = "third_tune"; 
+var playing_sound = "fifth_tune"; 
 var zoom = 0;
 var move = 0;
 var input_text = "index preface divisions thanks method question"
@@ -36,18 +36,21 @@ var collect_tones = true;
 var note_collation = [];
 var bright_note_collation = [];
 var dark_note_collation = [];
+var red_note_collation = [];
+var green_note_collation = [];
+var bleu_note_collation = [];
 var drum_index = 0; 
 var drums = true; 
 var base_index = 0; 
 var soundsys = false; 
-var oscillator = true;  
+var oscillator = false;  
 var osc_partials = [];
 var diff = 100; 
 var old_diff = 110;
 var drum_list = []
 var duration = 0.8;
 var time = 0;
-
+var one_the_beat = false; 
 var velocity = 0.2;
 var height = amplitude * 2;
 var move_wave = 0; 
@@ -64,9 +67,10 @@ var lastend = 0;
 var myTotal = 1000;
 var c = 0; 
 var b = 1; 
+var q = 0; 
 var soundplay = 0; 
 var collect = 0; 
-
+var next_step = true; 
 var kicks =  ["#","-","-","-", "#","-","-","-", "#","-","_","-", "#","-","-","-", "#","-","-","-", "#","-","-","-", "#","-","_","-", "#","-","#","-", ]; 
 var snares = ["-","-","-","-", "x","-","-","-", "-","-","-","-", "x","-","-","-", "-","-","-","-", "x","-","-","-", "-","-","-","-", "x","-","-","-", ]; 
 var hats =   ["-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-",]; 
@@ -75,12 +79,20 @@ var kicks_2 =  ["#","-","-","-", "#","-","-","-", "#","-","_","-", "#","-","-","
 var snares_2 = ["-","-","x","-", "-","-","-","-", "-","-","-","-", "x","-","-","-", "-","-","x","-", "-","-","-","-", "-","-","-","-", "x","-","-","-", ]; 
 var hats_2 =   ["-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-",]; 
 
-var ctrl_list = ["speed", "oscillator_volume", "oscillator_volume", "oscillator_spread", "oscillator_sustain"]       
-var play_list = ["none", "first_tune", "second_tune", "third_tune", "histogram"]       
+var ctrl_list = ["speed", "oscillator_volume", "oscillator_volume", "oscillator_spread", "oscillator_sustain", "sampel_rate", "note_devistion", "down_scaling", "released" ]       
+var play_list = ["none", "first_tune", "second_tune", "third_tune", "histogram", "fourth_tune",]       
 
 var ctrl_index = 0; 
+var part_created = false; 
+var piano_parts = {}; 
+var chello_parts = {}; 
+var sampel_rate = 64; 
+var note_devistion = 60; 
+var down_scaling = 10; 
+var released = 4096;
 
-var piano_map = [1,1,2,3,4,4,4,3,2,1,0]
+
+var piano_map = [1,1,2,3,3,3,2,1,0]
 if (oscillator == true) {
     var osc = new Tone.Oscillator({
       "frequency" : 440,
@@ -128,6 +140,29 @@ var squaresynth = new Tone.Synth({
       }
     }).toMaster();
 
+ var chellosynth = new Tone.PolySynth(6, Tone.Synth, {
+    "volume": -10,  
+    "harmonicity": 3.01,
+    "modulationIndex": 14,
+    "oscillator": {
+        "type": "triangle"
+    },
+    "envelope": {
+        "attack": 0.2,
+        "decay": 0.3,
+        "sustain": 0.1,
+        "release": 1.2
+    },
+    "modulation" : {
+        "type": "square"
+    },
+    "modulationEnvelope" : {
+        "attack": 0.01,
+        "decay": 0.5,
+        "sustain": 0.2,
+        "release": 0.1
+    }
+      }).toMaster();
   var fsynth = new Tone.PolySynth(6, Tone.Synth, {
       "oscillator" : {
         "partials" : [0, 2, 3, 4],
@@ -398,6 +433,17 @@ var notes = [
       },
     }).chain(distortion, drumCompress);
 
+    var loop = new Tone.Part(function(time){
+ 
+      console.log(b)
+          
+      b = b + 1; 
+            if (b > 15) {
+              b = 0; 
+
+            } 
+    }, [0, 2, 4, 6, ], "16n").start(0);
+
     // kick 
     var kick = new Tone.MembraneSynth({
       "pitchDecay" : 0.01,
@@ -534,15 +580,57 @@ var notes = [
         kick.triggerAttack("C1", time);
       }
     }, [1, [1, [null, 0.3]], 1, [1, [null, 0.5]], 1, 1, 1, [1, [null, 0.8]]], "2n").start(0); **/
+
+var i = 0; 
+var loop = new Tone.Sequence(function(time){   
+    if (snares[i] != "-") {
+       //snare.triggerAttack();
+    }
+    if (kicks[i] != "-") {
+        kick.triggerAttack("C1", time);
+    }
     
- 
- 
+    if (hats[i] != "-") {
+
+        hat.triggerAttack();
+    }
+
+    i = i + 1;
+    if (i > 15) {
+      i = 0;
+    }
+}, "32n");
+    if (playing_sound == 'fourth_tune') {
+        var piano_parts = new Tone.Sequence(function(time, dark_note){
+            pianoSynth.triggerAttackRelease(dark_note, "1n", time)
+          }, ["Db3", "C3"], "2n").start(0);
+
+        var chello_parts = new Tone.Sequence(function(time, bright_note){
+              chellosynth.triggerAttackRelease(bright_note, "1n", time)
+          }, ["C3", "Db3",], "8n").start(0);                     
+    }
+    var red_parts = new Tone.Sequence(function(time, red_note){
+        steelsynth.triggerAttackRelease(red_note, "1n", time)    
+      }, ["Db3", "C3"], "2n").start(0);
+
+    var green_parts = new Tone.Sequence(function(time, green_note){
+          kick.triggerAttackRelease(green_note, "1n", time)
+      }, ["C#7", "C3"], "8n").start(0);                     
+   
+    var bleu_parts = new Tone.Sequence(function(time, bleu_note){
+          bass.triggerAttackRelease(bleu_note, "1n", time)
+
+      }, ["C2", "C3"], "8n").start(0);                     
+
+                                         
+      //play the loop between 0-2m on the transport
+      Tone.Transport.bpm.value = 200;
+      loop.start(0)
+
+      Tone.Transport.start('+0.1') 
 
 
 $(function(){
-
-
-
     // creating canvas objects
     canvas = document.getElementById('canvas');
     ctx = canvas.getContext('2d');
@@ -573,6 +661,30 @@ $(function(){
   
 }); //end of $function
 
+
+function getScaledNoteFromNumber(number, scale, trans) {
+  
+    number = Math.abs(number);
+    
+    if (!number || number < 1) {
+      number = 1; 
+    }
+    
+    var octave = Math.floor( number / scale );
+    if (octave > trans) {
+      octave - trans; 
+    }
+  
+    var float_number =  octave/scale
+    var the_note = float_number % 1;
+    console.log("n", the_note)
+    the_note = Math.floor(the_note * 10); 
+
+    var the_final_note = notes_map[the_note]+octave; 
+
+    return the_final_note; 
+
+}
 
 function drawProcess() { 
 
@@ -607,6 +719,7 @@ function drawProcess() {
     }  
     return pixelrowzoom; 
   }
+
 
  function getPixelrow(pixels, row) {
     pixelrow = []
@@ -673,6 +786,7 @@ function drawProcess() {
         var pix_row = getPixelrow(pixelArray, row);
         var pix_row_zoom =  getPixelrowzoom(pixelArray, row); 
         var pix_sort =  getPixelrowzoom(pixelArray, row); 
+        var pix_future = getPixelrowzoom(pixelArray, row+4); 
         // get canvas height and width dynamically
         canvasWidth = $( "#canvasWidth" ).val();
         canvasHeight = $( "#canvasHeight" ).val();
@@ -695,6 +809,11 @@ function drawProcess() {
             });
         // transpose the color index, will change rgb_a colors
         c = c + parseInt($( "#c" ).val());
+        sampel_rate = $( "#sampel_rate" ).val();
+        note_devistion = $( "#note_devistion" ).val();
+        down_scaling = $( "#down_scaling" ).val();
+        released = $( "#released" ).val();
+
 
         //time = parseInt($( "#time" ).val());
         //threshold = parseInt($( "#velocity" ).val());
@@ -708,6 +827,186 @@ function drawProcess() {
         var sum_sum = 0; 
 
         for (j = 0; j < canvasHeight; j = j + 1) {
+            if (playing_sound == 'fifth_tune') {
+                if (c % sampel_rate == 0) {
+                    // count change between this row and the future
+                    var r_change = pix_row[c] - pix_future[c];
+                    var g_change = pix_row[c+1] - pix_future[c+1];
+                    var b_change = pix_row[c+2] - pix_future[c+2];
+                    color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',1';
+                        if (red_note_collation.indexOf(the_final_note) == -1) { 
+                            var the_final_note = getScaledNoteFromNumber(r_change, note_devistion, down_scaling)  
+                            red_note_collation.push(the_final_note); 
+                            console.log("Red",the_final_note)
+                            ctx.fillText("+R"+the_final_note , j , sum);
+                        }
+                        if (green_note_collation.indexOf(the_final_note) == -1) { 
+                            var the_final_note = getScaledNoteFromNumber(g_change, note_devistion, down_scaling)  
+                            green_note_collation.push(the_final_note); 
+                            console.log("Green",the_final_note)
+                            ctx.fillText("+G"+the_final_note , j , sum);
+                        }
+                        if (bleu_note_collation.indexOf(the_final_note) == -1) { 
+                            var the_final_note = getScaledNoteFromNumber(b_change, note_devistion, down_scaling)  
+                            bleu_note_collation.push(the_final_note); 
+                            console.log("Blau", the_final_note)
+                            ctx.fillText("+B"+the_final_note , j , sum);
+                        }
+                  }
+                  if (q % released == 0) { 
+                      console.log(red_note_collation.length)
+                      
+                      for (y = 0; y < red_note_collation.length; y = y + 1){
+                          red_parts.at(y, red_note_collation[y]);  
+                      }
+                      for (y = 0; y < green_note_collation.length; y = y + 1){
+                          green_parts.at(y, green_note_collation[y]);  
+                      }
+                      for (y = 0; y < bleu_note_collation.length; y = y + 1){
+                          bleu_parts.at(y, bleu_note_collation[y]);  
+                      }
+                      
+                      if (red_note_collation.length > 10) {
+                          red_note_collation = []; 
+                      }
+                      if (green_note_collation.length > 10) {
+                          green_note_collation = [];
+                      }
+                      if (bleu_note_collation.length > 10) {
+                          bleu_note_collation = [];
+                      }
+                  }
+
+                ctx.beginPath();
+                ctx.moveTo(j, canvasWidth);
+                color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',1';
+                ctx.strokeStyle ='rgba('+color_in+')';
+                
+                ctx.lineTo(j, 0);
+                ctx.closePath(); 
+                ctx.stroke();
+
+                c = c + 4;
+                q = q + 1; 
+                
+                
+            
+        } // end of fourth_tune
+        
+
+            if (playing_sound == 'fourth_tune') {
+
+               
+
+
+                   
+
+                // lets try piano mapping , mapp note from a scale and only chose from them.
+             
+                // set the speed 
+                // var sum = Math.floor(pix_row[c] + pix_row[c+1] + pix_row[c+2]); 
+                // if (sum > 10) Tone.Transport.bpm.value = sum/4;
+              
+                if (c % sampel_rate == 0) {
+                    var sum = Math.floor(pix_row[c] + pix_row[c+1] + pix_row[c+2]); 
+                    // console.log(sum)
+
+                    // count change between this row and the future
+                    var r_change = pix_row[c] - pix_future[c];
+                    var g_change = pix_row[c+1] - pix_future[c+1];
+                    var b_change = pix_row[c+2] - pix_future[c+2];
+                    var total_change = r_change + b_change + b_change; 
+                    d_total_change = Math.abs(total_change); 
+                   
+
+                    color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',1';
+                    
+                    
+                    //var the_final_note = getScaledNoteFromNumber(total_change, 57) 
+                   // console.log(sum/7, threshold)
+                
+                       
+                           if (sum < 350) {
+                            // piano_parts.remove(0);
+                            if (dark_note_collation.indexOf(the_final_note) == -1) { 
+                                var the_final_note = getScaledNoteFromNumber(sum, note_devistion, down_scaling)  
+                                dark_note_collation.push(the_final_note); 
+                                console.log("Dark ",the_final_note)
+                                ctx.fillText("+D"+the_final_note , j , sum);
+                            }
+                            
+                            } else {
+                         
+                       
+                          if (bright_note_collation.indexOf(the_final_note) == -1) {
+                              var the_final_note = getScaledNoteFromNumber(sum, note_devistion, down_scaling) 
+                              bright_note_collation.push(the_final_note);
+
+                              console.log("Brig ",the_final_note)
+                              ctx.fillText("+B"+the_final_note , j , sum);
+                          
+                            
+                        }
+                    }
+                    
+                 
+                     
+                   
+                    
+                  }
+                  if (q % released == 0) { 
+                      console.log("Brig ", bright_note_collation, dark_note_collation)
+                      for (y = 0; y < dark_note_collation.length; y = y + 1){
+                          piano_parts.at(y, dark_note_collation[y]); 
+                          chello_parts.at(y, bright_note_collation[y]);
+                      }
+                       
+                      q = 0; 
+                      if (dark_note_collation.length > 6) {
+                          threshold = threshold - 1; 
+                      }
+                      if (dark_note_collation.length < 1) {
+                          threshold = threshold + 1; 
+                      }
+
+                      if (dark_note_collation.length > 10) {
+                          dark_note_collation = []; 
+                      }
+                      if (bright_note_collation.length > 10) {
+                          bright_note_collation = [];
+                      }
+                  }
+
+                if (soundsys == true) {
+                    ctx.beginPath();
+                    ctx.moveTo(j, canvasWidth);
+                    ctx.lineTo(j+128, canvasWidth);
+                    ctx.lineTo(j+128, total_change+200);
+                    ctx.lineTo(j, total_change+200);
+                    ctx.lineTo(j, canvasWidth);
+                    ctx.fillStyle ='rgba('+color_in+')';
+                    ctx.fill();
+                    ctx.fillText("+"+sum , j , sum);
+                } else {
+               
+                }
+            
+                ctx.beginPath();
+                ctx.moveTo(j, canvasWidth);
+                color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',1';
+                ctx.strokeStyle ='rgba('+color_in+')';
+                
+                ctx.lineTo(j, 0);
+                ctx.closePath(); 
+                ctx.stroke();
+
+                c = c + 4;
+                q = q + 1; 
+                
+                
+            
+        } // end of fourth_tune
+        
 
         if (playing_sound == 'third_tune') {
             
@@ -720,7 +1019,7 @@ function drawProcess() {
             ctx.lineTo(j, 0);
             ctx.closePath(); 
             ctx.stroke();
-            // lets try piano mapping 
+            
 
             if (c % 512 == 0) {
                 var r = pix_sort[c];
@@ -732,15 +1031,12 @@ function drawProcess() {
 
                 var brightness = Math.floor(colorSum / j);
 
-            } 
-
-            
-            
+            }          
             
             var p_sum = Math.floor(pix_row[c] + pix_row[c+1] + pix_row[c+2]); 
             // the_speed = 200
             //var sum = Math.floor(pix_sort[b] + pix_sort[b+1] + pix_sort[b+2]); 
-           
+           Tone.Transport.bpm.value = p_sum; 
             if (sum < 1023) {
             
                 
@@ -777,9 +1073,22 @@ function drawProcess() {
 
                  if (dark_note_collation.length == 4 && sum != 0) {
                    //console.log(bright_note_collation, dark_note_collation, note_collation);
-                   sweetsynth.triggerAttack(bright_note_collation); 
-                   steelsynth.triggerAttack(dark_note_collation); 
-
+                    if (one_the_beat == true) {
+                      var steel_parts = new Tone.Sequence(function(time, note){
+                          steelsynth.triggerAttackRelease(note, "1n", time)
+                          // console.log(note)
+                        
+                      }, dark_note_collation, "4n").start(0);
+                 
+                      var sweet_parts = new Tone.Sequence(function(time, note){
+                          sweetsynth.triggerAttackRelease(note, "1n", time)
+                          // console.log(note)
+                      }, bright_note_collation, "4n").start(0);
+                    } else {
+                        sweetsynth.triggerAttack();
+                        steelsynth.triggerAttack(); 
+                    }
+                 
                    // setTimeout(function(){ synth.triggerRelease(note_collation) }, 100);
                    bright_note_collation = [];
                    dark_note_collation = []; 
@@ -1829,7 +2138,7 @@ function drawProcess() {
             
           }
     row = row + 1;    
-    if (row > 400) { // imgHeight
+    if (row > 100) { // imgHeight
       row = 0; 
       clearTimeout(timeOut); 
       nextImage();

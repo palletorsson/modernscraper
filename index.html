@@ -121,11 +121,9 @@
       if(e.which == 112) {
           var what = $( "#contrl_this" ).text();
           var vals = $( "#"+what ).val()
-          if (what == "speed") {
-              vals = parseFloat(vals) + 1; 
-          } else {
-              vals = parseFloat(vals) + 0.1; 
-          }
+         
+          vals = parseFloat(vals) + 1; 
+          
           $( "#"+what ).val(vals); 
           $( "#contrl_this_value" ).text(": "+ vals); 
 
@@ -134,11 +132,8 @@
           if(e.which == 246) {
           var what = $( "#contrl_this" ).text();
           var vals = $( "#"+what ).val()
-           if (what == "speed") {
-              vals = parseFloat(vals) - 1; 
-          } else {  
-              vals = parseFloat(vals) - 0.1; 
-          } 
+        
+          vals = parseFloat(vals) - 1; 
           $( "#"+what ).val(vals)
            $( "#contrl_this_value" ).text(": "+ vals); 
          
@@ -152,7 +147,21 @@
               what_num_play = 0; 
           }
           what_num_play = what_num_play + 1;
+
           
+
+      }
+      if(e.which == 111) {
+        console.log(oscillator); 
+        if (oscillator == true) {
+            osc.stop()
+            oscillator = false; 
+  
+        } else {
+          oscillator = true; 
+          osc.start()
+        }
+        
 
       }
     
@@ -197,6 +206,12 @@
         Count: <input type="text" id="oscillator_volume" value="3">
         Spread: <input type="text" id="oscillator_spread" value="30">
         Sustain: <input type="text" id="oscillator_sustain" value="0.1">
+        Sampel rate: <input type="text" id="sampel_rate" value="16"> 
+        note_Dev: <input type="text" id="note_devistion" value="59"> 
+        down_scaling: <input type="text" id="down_scaling" value="5">
+        Release: <input type="text" id="released" value="4096">
+        
+
     <span ><img src="images/smiley_sm.png" id="smile" /></span>
     <div>
       <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
