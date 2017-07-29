@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="stylesheet" href="css/jquery-ui.css">
-    
+    <link rel="stylesheet" href="css/bootstrap.min.css">    
   
     
     <title>canvas</title>
@@ -38,9 +38,12 @@
 
     <script type="text/javascript" src="js/jquery.js"></script>
     <script type="text/javascript"  src="js/jquery-ui.js"></script>
+    <script type="text/javascript"  src="js/bootstrap.min.js"></script>
     <script type="text/javascript" src="js/Tone.min.js"></script>
     <script type="text/javascript" src="js/tonal.min.js"></script>
-    <script type="text/javascript" src="js/main.js"></script>
+
+    <script type="text/javascript" src="js/obj_re.js"></script>
+    <script type="text/javascript" src="js/instruments_cell.js"></script>  
 <script>
   $( function() {
     $( "#slider-range" ).slider({
@@ -56,6 +59,177 @@
       " - $" + $( "#slider-range" ).slider( "values", 1 ) );
   } );
   var what_num_play = 0; 
+
+$(document).on('click', '.drufms', function () {
+    console.log(this.id)
+    loop.start(0); 
+
+
+});
+var red_button = 'off'
+var green_button = 'off'
+var bleu_button = 'off'
+$(document).on('click', '.onoff', function () {
+console.log(this.id)
+  if (this.id == "red") {
+    if ($('#play_red').val() == 'off') {
+        $('#play_red').val('on');
+        $('#red').val('on');
+        //red_parts.start();     
+    } else {
+      $('#play_red').val('off');
+      $('#red').val('off');   
+      // red_parts.stop(); 
+    }
+  }
+  if (this.id == "green") {
+    if ($('#play_green').val() == 'off') {
+        $('#play_green').val('on');
+        $('#green').val('on');
+        green_parts.start(); 
+    } else {
+      $('#play_green').val('off');   
+      $('#green').val('off');
+      green_parts.stop(); 
+    }
+  }
+  if (this.id == "bleu") {
+    if ($('#play_bleu').val() == 'off') {
+        $('#play_bleu').val('on');
+        $('#bleu').val('on');
+        bleu_parts.start(); 
+    } else {
+      $('#play_bleu').val('off');
+      $('#bleu').val('off')
+      bleu_parts.stop();    
+    }
+  }
+   if (this.id == "brig") {
+    if ($('#play_brig').val() == 'off') {
+        $('#play_brig').val('on');
+        $('#brig').val('on');
+    } else {
+      $('#play_brig').val('off');
+      $('#brig').val('off')   
+    }
+  }
+    if (this.id == "sum") {
+    if ($('#play_sum').val() == 'off') {
+        $('#play_sum').val('on');
+        $('#sum').val('on');
+    } else {
+      $('#play_sum').val('off');
+      $('#sum').val('off')   
+    }
+  }
+     if (this.id == "diff") {
+    if ($('#play_diff').val() == 'off') {
+        $('#play_diff').val('on');
+        $('#diff').val('on');
+    } else {
+      $('#play_diff').val('off');
+      $('#diff').val('off')   
+    }
+  }  
+                     
+
+});
+
+$(document).on('click', '.drums', function () {
+  
+    what = this.id; 
+
+    if (what == "snareLoop"){
+      snareLoop.start(0); 
+      this.id = "snareLoopStop"; 
+      $(this).removeClass("btn-success").addClass("btn-danger"); 
+    } 
+
+    if (what == "snareLoopStop"){
+      snareLoop.stop(0);
+      this.id = "snareLoop";  
+      $(this).removeClass("btn-danger").addClass("btn-success"); 
+    }
+
+    if (what == "kickLoop"){
+      kickLoop.start(0); 
+      this.id = "kickLoopStop"; 
+      $(this).removeClass("btn-success").addClass("btn-danger");
+    } 
+    if (what == "kickLoopStop"){
+      kickLoop.stop(0);
+      this.id = "kickLoop"; 
+      $(this).removeClass("btn-danger").addClass("btn-success");  
+    }
+
+    if (what == "hatLoop"){
+      hatLoop.start(0); 
+      this.id = "hatLoopStop"; 
+      $(this).removeClass("btn-success").addClass("btn-danger");
+    } 
+    if (what == "hatLoopStop"){
+      hatLoop.stop(0);
+      this.id = "hatLoop"; 
+      $(this).removeClass("btn-danger").addClass("btn-success");  
+    }
+    
+});
+
+$(document).on('click', '.synt', function () {
+  
+    what = this.id; 
+
+    if (what == "red_parts"){
+      red_parts.start(0); 
+      this.id = "red_partsStop"; 
+      $(this).removeClass("btn-success").addClass("btn-danger"); 
+    } 
+
+    if (what == "red_partsStop"){
+      red_parts.stop(0);
+      this.id = "red_parts";  
+      $(this).removeClass("btn-danger").addClass("btn-success"); 
+    }
+
+    if (what == "green_parts"){
+      green_parts.start(0); 
+      this.id = "green_partsStop"; 
+      $(this).removeClass("btn-success").addClass("btn-danger"); 
+    } 
+
+    if (what == "green_partsStop"){
+      green_parts.stop(0);
+      this.id = "grenn_parts";  
+      $(this).removeClass("btn-danger").addClass("btn-success"); 
+    }    
+
+    if (what == "bleu_parts"){
+      bleu_parts.start(0); 
+      this.id = "bleu_partsStop"; 
+      $(this).removeClass("btn-success").addClass("btn-danger"); 
+    } 
+
+    if (what == "bleu_partsStop"){
+      bleu_parts.stop(0);
+      this.id = "bleu_parts";  
+      $(this).removeClass("btn-danger").addClass("btn-success"); 
+    }
+
+    if (what == "red2_parts"){
+      red2_parts.start(0); 
+      this.id = "red2_partsStop"; 
+      $(this).removeClass("btn-success").addClass("btn-danger"); 
+    } 
+
+    if (what == "red2_partsStop"){
+      red2_parts.stop(0);
+      this.id = "red2_parts";  
+      $(this).removeClass("btn-danger").addClass("btn-success"); 
+    }
+
+
+
+});
   $(document).keypress(function(e) {
     
     console.log(e.which); 
@@ -129,13 +303,13 @@
 
 
       }
-          if(e.which == 246) {
+      if(e.which == 246) {
           var what = $( "#contrl_this" ).text();
           var vals = $( "#"+what ).val()
         
           vals = parseFloat(vals) - 1; 
           $( "#"+what ).val(vals)
-           $( "#contrl_this_value" ).text(": "+ vals); 
+          $( "#contrl_this_value" ).text(": "+ vals); 
          
 
       }
@@ -146,6 +320,15 @@
           if (what_num_play > play_list.length-2) {
               what_num_play = 0; 
           }
+          if (playing_sound == "sixth_tune") {
+            red2_parts.start(0); 
+            green2_parts.start(0); 
+            bleu2_parts.start(0); 
+
+          } 
+          Tone.Transport.stop(0)
+          Tone.Transport.start(0)
+
           what_num_play = what_num_play + 1;
 
           
@@ -172,7 +355,16 @@
     <div>
         <input id="start" value="start" type="button">
         <input id="next" value="next" type="button">
-        <span> | </span><span id="contrl_this"><small>Press L</small></span><span id="contrl_this_value"></span>
+
+        <span> | </span><span id="contrl_this"><small>Press L</small></span><span id="contrl_this_value">|</span>
+        <small> Red </small> : <input id="red" class="onoff btn btn-success btn-xs" value="off" type="button"> |
+        <small> Green </small> : <input id="green" class="onoff btn btn-success btn-xs" value="off" type="button">
+        <small> Bleu </small> : <input id="bleu" class="onoff btn btn-success btn-xs" value="off" type="button">
+        <small> Brig </small> : <input id="brig" class="onoff btn btn-success btn-xs" value="off" type="button">
+        <small> Sum </small> : <input id="sum" class="onoff btn btn-success btn-xs" value="off" type="button">
+        <small> Diff </small> : <input id="diff" class="onoff btn btn-success btn-xs" value="off" type="button">
+  
+
   
 
     </div>
@@ -181,6 +373,16 @@
         <div class="info"> Art 1923 </div>
     </div>
     <input id="first_tune" value="first_tune" type="button">
+    <input id="drum1" class="drums" value="l1" type="button">
+        <input id="snareLoop" class="drums btn btn-success btn-xs" value="s1" type="button">
+        <input id="kickLoop" class="drums btn btn-success btn-xs" value="k1" type="button">
+        <input id="hatLoop" class="drums btn btn-success btn-xs" value="h1" type="button">
+        <input id="red_parts" class="synt btn btn-success btn-xs" value="r1" type="button">
+        <input id="green_parts" class="synt btn btn-success btn-xs" value="g1" type="button">
+        <input id="bleu_parts" class="synt btn btn-success btn-xs" value="b1" type="button">
+        <input id="red2_parts" class="synt btn btn-success btn-xs" value="r2" type="button">
+        <input id="green2_parts" class="synt btn btn-success btn-xs" value="g2" type="button">
+        <input id="bleu2_parts" class="synt btn btn-success btn-xs" value="b2" type="button">
         <input id="room" value="room" type="button">
         <input id="inter" value="inter" type="button">
         <input id="arch" value="arch" type="button">
@@ -198,6 +400,7 @@
         <input type="text" id="canvasHeight" value="1200">
         <input type="text" id="c" value="0">
         Speed<input type="text" id="speed" value="200">
+        bpm<input type="text" id="bpm" value="200">
         T: <input type="text" id="time" value="0.001">
         V:<input type="text" id="velocity" value="50">
         D:<input type="text" id="duration" value="0.001">
@@ -205,11 +408,20 @@
         Volume: <input type="text" id="oscillator_volume" value="2">
         Count: <input type="text" id="oscillator_volume" value="3">
         Spread: <input type="text" id="oscillator_spread" value="30">
+ 
         Sustain: <input type="text" id="oscillator_sustain" value="0.1">
         Sampel rate: <input type="text" id="sampel_rate" value="16"> 
-        note_Dev: <input type="text" id="note_devistion" value="59"> 
-        down_scaling: <input type="text" id="down_scaling" value="5">
-        Release: <input type="text" id="released" value="4096">
+        note_Div: <input type="text" id="note_div" value="327"> 
+        down_scaling: <input type="text" id="down_scaling" value="50">
+        Release: <input type="text" id="released" value="4000">
+        Future: <input type="text" id="future" value="4">
+        threshold: <input type="text" id="threshold" value="30">
+        play red: <input type="text" id="play_red" value="off">
+        play green: <input type="text" id="play_green" value="off">
+        play bleu: <input type="text" id="play_bleu" value="off">
+        play brig: <input type="text" id="play_brig" value="off">
+        play sum: <input type="text" id="play_sum" value="off">
+play diff: <input type="text" id="play_diff" value="off">
         
 
     <span ><img src="images/smiley_sm.png" id="smile" /></span>

@@ -1,3 +1,45 @@
+
+var soundSys = {
+
+  type: "testtype", 
+  displayType: function() {  // Method which will display type of Animal
+    console.log(this.type);
+  }, 
+  getScaledNoteFromNumber: function (number, scale, trans) {
+  
+    number = Math.abs(number);
+    
+    if (!number || number < 1) {
+      number = 1;
+      console.log("bad") 
+    }
+    
+    var octave = Math.floor( number / scale );
+    console.log("o --------", octave)
+    if (octave > trans) {
+      octave - trans; 
+    }
+  
+    var float_number =  octave/scale
+    var the_note = float_number % 1;
+
+    console.log("n ------ ", the_note)
+    var f_the_note = Math.floor(the_note * 10); 
+    console.log("f ----", f_the_note)
+
+    var the_final_note = notes_map[f_the_note]+octave; 
+
+    return the_final_note; 
+
+}
+};
+
+// Create new animal type called animal1 
+var soundSys1 = Object.create(soundSys);
+
+soundSys1.displayType(); // Output:Invertebrates
+
+
 var canvas, ctx;
 var aImages = [];
 var iCurFrame = 0;
@@ -14,7 +56,7 @@ var folder = "1024"
 var old_img = ''
 var rectang = 1024;
 var playing = 'updown';
-var playing_sound = "sixth_tune"; 
+var playing_sound = "10th_tune"; 
 var zoom = 0;
 var move = 0;
 var input_text = "index preface divisions thanks method question"
@@ -61,7 +103,8 @@ var road_i = 0;
 var gap = 1.8; // increase this for spacing between spiral lines        
 var STEPS_PER_ROTATION = 44; // increasing this makes the curve smoother
 var notes_map = ["C", "Db", "C#", "D", "Eb", "D#", "E", "F", "Gb", "F#", "G", "Ab", "G#", "A", "Bb", "A#", "B"];
- 
+var notes_map_harm = ["C", "D", "A", "D", "C", "B", "E", "F", "F", "F", "G", "G", "G", "A", "A", "A", "B"];
+
 var increment = 2*Math.PI/STEPS_PER_ROTATION;   
 var theta = increment;
 var color_contrast = 0; 
@@ -81,7 +124,7 @@ var kicks_2 =  ["#","-","-","-", "#","-","-","-", "#","-","_","-", "#","-","-","
 var snares_2 = ["-","-","x","-", "-","-","-","-", "-","-","-","-", "x","-","-","-", "-","-","x","-", "-","-","-","-", "-","-","-","-", "x","-","-","-", ]; 
 var hats_2 =   ["-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-", "-","-","o","-",]; 
 
-var ctrl_list = ["speed", "oscillator_volume", "oscillator_volume", "oscillator_spread", "oscillator_sustain", "sampel_rate", "note_div", "down_scaling", "released", "future" ];       
+var ctrl_list = ["speed", "bpm", "sampel_rate", "threshold", "note_div", "down_scaling", "released", "future", "oscillator_volume", "oscillator_volume", "oscillator_spread", "oscillator_sustain"];       
 var play_list = ["none", "second_tune", "third_tune", "histogram", "fourth_tune", "fifth_tune", "sixth_tune"];       
 
 var ctrl_index = 0; 
@@ -93,7 +136,24 @@ var note_div = 60;
 var down_scaling = 10; 
 var released = 4096;
 var piano_map = [1,1,2,3,3,3,2,1,0]
-
+var yr = 0; 
+var yg = 0; 
+var yb = 0; 
+var l = 0; 
+var collect_pattern = 'one';
+var coll_r = 0; 
+var coll_g = 0; 
+var coll_b = 0; 
+var z = 0; 
+var play_red = false;
+var play_bleu = false;
+var play_green = false;
+var play_brig = false; 
+var play_sum = false;
+var lop = 0; 
+var no_loop = 0; 
+var change_set = false; 
+var getAllval = false; 
 $(function(){
     // creating canvas objects
     canvas = document.getElementById('canvas');
@@ -130,27 +190,29 @@ function getScaledNoteFromNumber(number, scale, trans) {
   
     number = Math.abs(number);
     
-    if (!number || number < 1) {
-      number = 1;
-      console.log("bad") 
-    }
     
-    var octave = Math.floor( number / scale );
-    console.log("o --------", octave)
+    var octave = Math.floor( number / scale ) + 1;
+
     if (octave > trans) {
-      octave - trans; 
+      octave = octave - trans; 
     }
   
     var float_number =  octave/scale
     var the_note = float_number % 1;
 
-    console.log("n ------ ", the_note)
+ 
     var f_the_note = Math.floor(the_note * 10); 
-    console.log("f ----", f_the_note)
-
-    var the_final_note = notes_map[f_the_note]+octave; 
-
+    //var isnumber = isNaN(f_the_note); 
+    //console.log("o :", octave, "n ------ ", the_note, "f ----", f_the_note)
+    
+    var the_final_note = notes_map_harm[f_the_note]+octave; 
+    // console.log("function", the_final_note)
+    if (the_final_note == NaN) {
+      return 100; 
+    }
+   
     return the_final_note; 
+ 
 
 }
 
@@ -201,6 +263,13 @@ function drawProcess() {
     return pixelrow; 
   }
 
+  function diffFromFuture(pix_row_1_r, pix_row_1_g, pix_row_1_g, pix_row_f_r, pix_row_f_g, pix_row_f_g) {
+    var sum = Math.floor((pix_row_1_r + pix_row_1_g + pix_row_1_g) / 3);
+    var sum_f = Math.floor((pix_row_f_r + pix_row_f_g + pix_row_f_g) / 3);
+    diff = (sum - sum_f);
+    return diff; 
+  }
+
   function nextImage() {
 
       info = $(".info").html(aImages[iCurImage].id);
@@ -235,12 +304,11 @@ function drawProcess() {
   }
 
 
-
     var rect = function() {
 
         the_speed = $( "#speed" ).val();
         Tone.Transport.bpm.value  = $( "#bpm" ).val();
-        console.log(the_speed, Tone.Transport.bpm.value)
+        //console.log(the_speed, Tone.Transport.bpm.value)
         var similey = document.getElementById("smile");
         var c = 0; 
         var b = 0; 
@@ -257,35 +325,21 @@ function drawProcess() {
         var pix_row_zoom =  getPixelrowzoom(pixelArray, row); 
         var pix_sort =  getPixelrowzoom(pixelArray, row); 
         var pix_future = getPixelrowzoom(pixelArray, row+future); 
-        console.log("---", future)
+        //  console.log("---", future)
         // get canvas height and width dynamically
         canvasWidth = $( "#canvasWidth" ).val();
         canvasHeight = $( "#canvasHeight" ).val();
             // sustain nob? 
-            synth.set({
-              "oscillator" : {
-                
-                "count" : $( "#oscillator_count" ).val(),
-                "spread" :  $( "#oscillator_spread" ).val(),
-              },
-              "volume" : $( "#oscillator_volume" ).val(),
-              "filter" : {
-                "type" : "highpass"
-              },
-              "envelope" : {
-                
-                "sustain": $( "#oscillator_sustain" ).val(),
-                
-              }
-            });
+           
         // transpose the color index, will change rgb_a colors
         c = c + parseInt($( "#c" ).val());
         sampel_rate = $( "#sampel_rate" ).val();
+        // console.log(sampel_rate)
         note_div = $( "#note_div" ).val();
         down_scaling = $( "#down_scaling" ).val();
         released = $( "#released" ).val();
         future = $( "#future" ).val();
-
+        threshold = parseInt($( "#threshold" ).val());
 
         //time = parseInt($( "#time" ).val());
         //threshold = parseInt($( "#velocity" ).val());
@@ -299,6 +353,641 @@ function drawProcess() {
         var sum_sum = 0; 
 
         for (j = 0; j < canvasHeight; j = j + 1) {
+
+
+
+            if (q % sampel_rate == 0 ) {
+                if (getAllval == true) {
+                    var red = pix_row[c]
+                    var green = pix_row[c+1]
+                    var bleu = pix_row[c+2]
+                    var red_f_diff = red - pix_future[c];
+                    var green_f_diff = green - pix_future[c+1];
+                    var bleu_f_diff = bleu - pix_future[c+2];
+                    var red_rel = red / (green + bleu);
+                    var green_rel = green / (red + bleu);
+                    var bleu_rel = bleu / (red + green);
+                    var sum = Math.floor((red + green + bleu) / 3);
+                    var diff = diffFromFuture(red, green, bleu, pix_future[c], pix_future[c+1], pix_future[c+2]); 
+                    var brightness_1 = (0.2126*red + 0.7152*green + 0.0722*bleu);
+                    var brightness = (red + green + bleu);
+                    var play_red = $('#play_red').val();  
+                    var play_bleu = $('#play_bleu').val(); 
+                    var play_green = $('#play_green').val(); 
+                    var play_brig = $('#play_brig').val();  
+                    var play_sum = $('#play_sum').val();  
+                    var play_diff = $('#play_diff').val(); 
+                    //ctx.fillText("+", c, 300);
+                }
+                if (sum > 300) {
+                    the_speed = sum/2; 
+                    console.log(the_speed) 
+                } 
+                c = c +4; 
+   
+
+            }
+            if (q % 500  == 0) { 
+              if (red > 1 && green > 1 && bleu > 1) {
+           
+                if (change_set == true) {
+                       console.log(red, green, bleu )
+                var count = red / 30; // 3
+                var spread = bleu / 5;  // 
+                var release = red / 100;
+                var sustain = green / 500;
+                var attack = red / 1000; 
+                var decay = bleu / 1000; 
+                console.log("count:", count, "spread:", spread)
+                console.log("attack:", attack, "sustain:", sustain, "decay", decay, "released", release)
+                polySynth2.set({
+                    "portamento" : 1.8,
+                    "oscillator" : {
+                      "count" :  count, // 3
+                      "spread" : spread, // 30
+                    },
+                    "volume" : -10, // green / 10,  // -10 
+                    "envelope" : {
+                        "attack": attack, // 0.01, // 0.01
+                        "decay": decay, // 0.1, // 0.1
+                        "sustain": sustain, // 0.5, // 0.5
+                        "release": release, // , // 0.4 
+                        "releaseCurve" : "bounce"
+                    }, 
+                    "type": "sine" // sine, random, fatsawtooth, square square4 square6 tr
+                });
+                dist.wet.value = spread;
+                }
+              }
+
+            }
+
+      
+
+
+
+            
+            color_in = r_val+','+g_val+','+b_val+',1';
+            ctx.beginPath();
+            ctx.moveTo(j, canvasWidth);
+            color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',001';
+            ctx.strokeStyle ='rgba('+color_in+')';
+            
+            ctx.lineTo(j, 0);
+            ctx.closePath(); 
+            ctx.stroke();
+
+            if (playing_sound == '10th_tune') {
+               if (q % sampel_rate == 0 ) {
+                console.log(sampel_rate, q)
+                var red = pix_row[c]
+                var green = pix_row[c+1]
+                var bleu = pix_row[c+2]
+                var z = 0; 
+                var sum = Math.floor((red + green + bleu) / 3); 
+    
+                if (q % sampel_rate == 0 && c < 4000) {
+                  if (sum < 100) {
+                    duoSynth.triggerAttackRelease(sum, undefined, 0.01);
+                  
+                  } else {
+                    noiseSynthPink.triggerAttackRelease("8n");
+                  }
+
+                }
+              }
+               q = q + 1; 
+            } // end of 10
+            if (playing_sound == 'nigth_tune') {
+
+                var z = 0;  
+    
+                if (q % sampel_rate == 0 && c < 4000) {
+               
+                    if (red > threshold+180) {
+                      c = c +4; 
+                      // chellosynth.triggerAttack(sum);
+                      if (play_red == 'on') {
+                        var note_val = Math.floor((red-190)+(c/40)); 
+                        console.log(note_val, (red-200)+(c/40)); 
+
+                        red_final_note = getScaledNoteFromNumber(note_val, 10, 5); //Tonal.freq.note(red+200); 
+                        console.log(red_final_note)
+                        
+                        if (red_final_note != NaN && red_final_note != 100 && red_note_collation.indexOf(red_final_note) == -1) { 
+                            var leng = red*0.0001; 
+                            //console.log("---",leng, red_final_note)
+                           //  pianoSynth.triggerAttackRelease(red_final_note, undefined, leng); // 
+                             piano.triggerAttackRelease(red_final_note, undefined, leng);
+                           
+                              
+                            // pianoSynth.triggerAttackRelease(red_note_collation, "1n")
+                            // red_parts.at(z, red_final_note); 
+                            // red_note_collation.push(red_final_note);
+                            // osc_partials.push(sum*0.1)
+                            
+                            //console.log("RED --------------------", red_final_note, red_final_note.length);
+                            // osc.partials.push(bleu);
+                            z = z + 1; 
+                             
+                              
+                                //red_note_collation = [] 
+                                
+                            
+                         
+                            ctx.fillText("+"+ coll_r, c, 200+red);
+                            yr = yr + 1;   
+                        }
+                      }
+                    }
+                    
+                    if (Math.abs(bleu) > threshold+130) {
+                        if (play_bleu == 'on') {
+                            b_final_note = getScaledNoteFromNumber((c/30), 31, 5) //Tonal.freq.note(Math.floor(Math.abs(brightness_1)));    
+                            if (b_final_note != false && bleu_note_collation.indexOf(the_final_note) == -1) { 
+                                if (bleu > threshold+90) {
+                                    bleu_note_collation.push(b_final_note); 
+                                    console.log("Bleu -----------_", sum, b_final_note);
+                                    //bleu_parts.at(yb, b_final_note); 
+                                    yb = yb + 1 
+                                    var leng = bleu * 0.001; 
+                                    bass.triggerAttackRelease(b_final_note, undefined, leng); // undefined, 0.001
+                                    
+                                } else {
+                                    var leng = bleu*0.001; 
+                                    sweetsynth.triggerAttackRelease(b_final_note, undefined, leng); // undefined, 0.001
+                                    //drop.triggerAttackRelease(b_final_note)
+                                }   
+                            }
+                        }
+                    }
+          
+                    if (Math.abs(green) > threshold+135) {
+                        if (play_green == 'on') {
+                            g_final_note = getScaledNoteFromNumber((green+(c/20))-threshold+135, 41, 5) // Tonal.freq.note(Math.floor(Math.abs((green-(threshold+100)+(c/20)*5)))); 
+                            if (g_final_note != NaN) {  
+                                // chellosynth.triggerAttackRelease(g_final_note, "1n")
+                                 
+                                if (q % 1 == 0) {
+                                   console.log("Green ----------", green+(c/40), g_final_note, q) 
+                                   var leng = bleu*0.001 || 0.001; 
+                                    // green_note_collation.push(g_final_note); 
+                                    // green_parts.at(yg, g_final_note);
+                                    // fmsynth.triggerAttackRelease(g_final_note, undefined, leng);
+                                   duoSynth.triggerAttackRelease( g_final_note, undefined, 0.01);
+                                    yg = yg + 1; 
+                                     
+                                }   
+                                          
+                            }
+                        }
+                    }
+
+                    if (play_brig == 'on') {
+                        if (Math.abs(brightness) < 100) {
+                          brig_final_note = Tonal.freq.note(Math.floor(Math.abs(brightness-210)/6)); 
+                          console.log("drum-------", Math.floor(Math.abs(brightness-210)/3), brightness)
+                          //bass.triggerAttackRelease(brig_final_note);
+                          if (yg % 8 == 0 && brig_final_note != false ) {
+                              kick.triggerAttack(brig_final_note); 
+                          } 
+                          if (yg % 16 == 8) {
+                              snare.triggerAttack();
+                          }
+
+                          if (yg % 14 == 8) {
+                            var rand = Math.random();
+                            if (rand < 0.5) {
+                              snare.triggerAttack();
+                            }
+                          }
+                          if (yg % 2 == 0) {
+                              hat.triggerAttack();
+                          } 
+                          yg = yg + 1  
+                          var rand = Math.random();
+                            if (yg % 2 == 0) {
+                               if (rand < 0.5) {
+                              noiseSynthPink.triggerAttackRelease("8n");
+
+                            }
+                            if (rand < 0.9) {
+                              noiseSynthPink.set("noise.type", "brown");
+                             } else {
+                              // noiseSynthPink.set("noise.type", "pink");
+                             }
+                           }
+                           if (yg % 14 == 8) {
+                             
+                              if (rand > 0.5) {
+                              console.log("rand")
+
+                              snare.triggerAttack();
+
+                             
+                              }
+                          } 
+                        } else if (Math.abs(brightness) < 50) {
+                           
+                          var rand = Math.random();
+                            if (yg % 2 == 0) {
+                               if (rand < 0.5) {
+                               // noiseSynthPink.triggerAttackRelease("8n");
+
+                            }
+                            if (rand < 0.9) {
+                             //  noiseSynthPink.set("noise.type", "brown");
+                             } else {
+                             //  noiseSynthPink.set("noise.type", "pink");
+                             }
+                           }
+                           if (yg % 14 == 8) {
+                             
+                              if (rand > 0.5) {
+                              console.log("rand")
+
+                              snare.triggerAttack();
+
+                             
+                              }
+                          }
+                           yg = yg + 1 
+                        } else {
+
+                        }
+
+                    }
+
+                    if (play_sum == 'on') {
+                        
+                        if (sum < threshold+30) {
+                         // osc.partials = [sum/10, sum/100, sum/1000];
+
+                            var gg = Math.abs(sum)-(threshold+90)+(c/20)
+                            // console.log(gg)
+                            sum_final_note = getScaledNoteFromNumber(gg, 31, 6); //Tonal.freq.note(Math.floor(Math.abs(sum*0.7))); 
+                            //synthR.triggerAttackRelease(sum_final_note);
+                                if (sum < 60 ) {
+                                   // console.log("---------",  threshold+70, sum, sum_final_note); 
+                                   // bass.triggerAttackRelease(sum_final_note, undefined, 0.01);
+                                } else {
+                                   // brass.triggerAttackRelease(sum_final_note, undefined, 0.01); 
+                                }
+                            
+                        } else {
+                          if (sum < threshold+60) {
+                            var gg = c/40; 
+                            //console.log("less------", c, sum)
+                           // sum_final_note = getScaledNoteFromNumber(gg, 17, 1); //Tonal.freq.note(Math.floor(Math.abs(sum*0.7))); 
+                          
+                            // noiseSynthPink.triggerAttackRelease("8n");
+                           
+                            //plSynth.triggerAttackRelease(sum_final_note, undefined, 0.01);
+                            // crucherSynth.triggerAttackRelease(sum_final_note, undefined, 0.01);
+                            // chebySynth.triggerAttackRelease(sum_final_note, undefined, 0.01);
+                            // synthL.triggerAttackRelease(sum_final_note);
+
+
+                            // memSynth.triggerAttackRelease(sum_final_note, undefined, 0.01);
+                            // duoSynth.triggerAttackRelease(sum_final_note, undefined, 0.01); 
+                        }
+                      }
+                    }
+
+                    if (play_diff == 'on') {
+                         
+                        if (Math.abs(diff) > threshold+70) {
+                            var new_c = c/10// +diff;
+                            console.log("c",  new_c)
+                           
+                            diff_final_note = getScaledNoteFromNumber(Math.floor(new_c), 31, 6); // Tonal.freq.note(Math.floor(new_c)); 
+                            var leng = Math.abs(diff*0.001); 
+                            console.log(leng)
+                            if (diff_final_note != NaN && new_c > 100) {  
+                                // synthL.triggerAttackRelease(diff_final_note, undefined, leng);
+                                fmsynth.triggerAttackRelease(diff_final_note, undefined, leng);
+                            } else {
+                              // synthR.triggerAttackRelease(diff_final_note, undefined, leng);
+                               synth.triggerAttackRelease('F27');
+                            } 
+                        } else {
+
+                        }
+                    }
+
+                } else {
+                    if (red_note_collation.length > 2) {
+                        // red_parts.at(0, red_note_collation); 
+                        console.log("red", red_note_collation);
+                        //osc.partials = osc_partials;
+                        red_parts.values = red_note_collation; 
+
+                        red_note_collation = [];
+                        z = 0; 
+                          
+                    }  
+                    if (bleu_note_collation.length > 10) {
+                        console.log("bluE", bleu_note_collation);
+                        bleu_note_collation = [];
+                        yb = 0;   
+                     }  
+                     if (green_note_collation.length > 2) {
+                        console.log("green", green_note_collation);
+                        yg = 0; 
+                        green_parts.values = green_note_collation
+                        green_note_collation = [];
+                        // lop = lop + 10; 
+                        // green_parts.loop = lop;
+
+                     } else {
+                        no_loop = no_loop + 1; 
+                        if (no_loop > 1000) {
+                            // green_parts.stop(); 
+                            no_loop = 0; 
+                        }
+                     } 
+                     if (osc_partials.length > 2) {
+                      console.log("pars", osc_partials);
+                      osc.partials = osc_partials;
+                      osc_partials = []  
+                     }
+                }
+ 
+         
+
+            c = c + 4;
+            q = q + 1; 
+
+                
+                
+            
+        } // end of nigth_tune
+
+            if (playing_sound == 'eight_tune') {
+             
+            //    if (c % 16 == 0) {
+
+               
+                    if (q % sampel_rate == 0) {
+                      coll_r =  coll_r / sampel_rate-1;
+                      coll_g =  coll_g / sampel_rate-1;
+                      coll_b =  coll_b / sampel_rate-1;
+                      //console.log(q, c, coll_r, coll_g, coll_b); 
+                      //console.log(coll_r, threshold-70)
+                     if (Math.abs(coll_r) > threshold) {
+                       // console.log(red_note_collation.length)
+                       r_final_note = getScaledNoteFromNumber(Math.floor(coll_r+(c/100)), note_div, down_scaling) 
+                                
+                        if (r_final_note != NaN && red_note_collation.indexOf(r_final_note) == -1) { 
+                          red_note_collation.push(r_final_note); 
+                          ctx.fillText(r_final_note, c, coll_r);
+                          
+                         // console.log("RED", r_final_note); 
+                          //if(yr % 2== 0) {
+                          //pianoSynth.triggerAttackRelease(r_final_note, "1n")
+                         //console.log("pianoSynt", yr, r_final_note, red_note_collation)
+
+                        //}
+                             //red_parts.at(yr, r_final_note); 
+                             yr = yr + 1
+                          }
+                    }
+                    //console.log(coll_g, threshold)
+                    if (Math.abs(coll_g) > threshold) {
+                        
+                        
+                        g_final_note = getScaledNoteFromNumber(Math.floor(coll_g+(c/100)), note_div, down_scaling)  
+                           
+                        if (g_final_note != NaN) { 
+                          // green_note_collation.push(r_final_note); 
+                          // green_parts.at(yg, g_final_note); 
+                          //console.log("Green", g_final_note)
+                          if(yg % 8 == 0) {
+                              kick.triggerAttackRelease(g_final_note, "1n")
+                              //console.log("kick")
+                              }
+
+                         
+                          yg = yg + 1                          
+                      }
+                    }
+                      //console.log(coll_b, threshold-40)
+                  if (Math.abs(coll_b) > threshold) {
+                      // var num = Math.floor((Math.abs(coll_b)/note_div)+(c/100))-50;
+                     
+                      b_final_note = getScaledNoteFromNumber(Math.floor(coll_b+(c/100)), note_div, down_scaling)  
+                         
+                      if (b_final_note != NaN && bleu_note_collation.indexOf(b_final_note) == -1) { 
+                          bleu_note_collation.push(b_final_note); 
+                          console.log("Bleu", b_final_note); 
+                          // ctx.fillText(r_final_note, c, coll_r);
+                          if(yb % 4 == 0 || yb % 6 == 0) {
+                            bass.triggerAttackRelease(b_final_note, "1n")
+                            // console.log("base")
+                          }
+                          yb = yb + 1
+
+                         
+                      }
+                  }
+                  //console.log("---", bleu_note_collation.length, bleu_note_collation)
+                   
+             
+                
+                coll_r = 0;
+                coll_g = 0;
+                coll_b = 0;
+
+                } else {
+                
+                coll_r = coll_r + pix_row[c]; 
+                coll_g = coll_g + pix_row[c+4];
+                coll_b = coll_b + pix_row[c+9];  
+                  if (red_note_collation.length > future) {
+                       // red_parts.at(0, red_note_collation); 
+                  console.log("red", red_note_collation);
+                   red_note_collation = []; 
+                   for (i=0; i<future; i++) {
+                        red_parts.at(i, red_note_collation[i]); 
+                        //console.log(bleu_note_collation[i]);
+                    }
+
+                  yg = 0;
+                }    
+                if (bleu_note_collation.length > future+2) {
+                  console.log("bleu", bleu_note_collation);
+                  //bleu_parts.at(0, bleu_note_collation); 
+                    for (i=0; i<future+2; i++) {
+                        bleu_parts.at(i, bleu_note_collation[i]); 
+                        //console.log(bleu_note_collation[i]);
+                    }
+                   bleu_note_collation = []; 
+
+                 
+                }     
+                }
+      
+          
+          
+                   
+             
+            color_in = r_val+','+g_val+','+b_val+',1';
+            ctx.beginPath();
+            ctx.moveTo(j, canvasWidth);
+            color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',1';
+            ctx.strokeStyle ='rgba('+color_in+')';
+            
+            ctx.lineTo(j, 0);
+            ctx.closePath(); 
+            ctx.stroke();
+
+            c = c + 4;
+            q = q + 1; 
+
+                
+                
+            
+        } // end of eg_tune
+            if (playing_sound == 'seventh_tune') {
+             
+            //    if (c % 16 == 0) {
+
+               
+                    if (q % threshold == 0 && c < 4000) {
+                      coll_r =  coll_r + coll_r / threshold;
+                      coll_g =  coll_g + coll_g / 32
+                      coll_b =  coll_b + coll_b / 32
+                      console.log(q, c, coll_r, coll_g, coll_b); 
+                      if (Math.abs(coll_r) > threshold && q % 32 == 0) {
+
+                        r_final_note = Tonal.freq.note(Math.floor(Math.abs(coll_r))); 
+                                
+                        if (r_final_note != NaN) { 
+                          ctx.fillText(r_final_note, c, coll_r);
+                          console.log(yr, r_final_note); 
+                              
+                               
+                           if (z == 2) { 
+                              red_parts.at(yr, red_note_collation); 
+
+                           }
+                           if (z < 1) { 
+                              red_note_collation.push(r_final_note)
+                           } else {
+                            yr
+                             red_parts.at(yr, r_final_note); 
+                             yr = yr + 1
+                             z = 0; 
+                          }
+                        }
+                    }
+                    if (Math.abs(coll_g) > threshold) {
+
+                        g_final_note = Tonal.freq.note(Math.floor(Math.abs(coll_g))); 
+                           
+                        if (g_final_note != NaN) { 
+                          // green_note_collation.push(r_final_note); 
+
+                          green_parts.at(yg, g_final_note); 
+
+                          //console.log("Green", the_final_note)
+                          yg = yg + 1                          
+                      }
+                    }
+                //  console.log(b_val, threshold-20)
+                  if (Math.abs(coll_b) > threshold) {
+
+                      b_final_note = Tonal.freq.note(Math.floor(Math.abs(coll_b)));  
+                         
+                      if (b_final_note != NaN && bleu_note_collation.indexOf(the_final_note) == -1) { 
+                          bleu_note_collation.push(b_final_note); 
+                          //console.log(yb, b_final_note)
+                          bleu_parts.at(yb, b_final_note);  
+                          
+                          yb = yb + 1
+                         
+                      }
+                  }
+                      
+
+                    } else {
+                    
+                    console.log(q, c, coll_r, coll_g, coll_b); 
+                      coll_r = coll_r + pix_row[c]; 
+                      coll_g = coll_g + pix_row[c+1];
+                      coll_b = coll_b + pix_row[c+2];  
+                        
+                    }
+
+                    
+
+             // } // 4012
+
+                      //Tone.Transport.bpm.value = Math.floor(pix_row[c] + pix_row[c+1] + pix_row[c+2]) /5; 
+                  
+              // count change between this row and the future
+              if (collect_pattern == 'mid') {
+
+                  var r_val = pix_row[c] / pix_row[c] + pix_row[c+1] + pix_row[c+2];
+                  var g_val = pix_row[c+1] / pix_row[c] + pix_row[c+1] + pix_row[c+2];
+                  var b_val = pix_row[c+2] / pix_row[c] + pix_row[c+1] + pix_row[c+2];
+
+              } else if (collect_pattern == 'one') {
+
+                  var r_val = pix_row[c] 
+                  var g_val = pix_row[c+1] 
+                  var b_val = pix_row[c+2] 
+              
+              } else if (collect_pattern == 'future') {
+                  var r_val = pix_row[c] - pix_future[c];
+                  var g_val = pix_row[c+1] - pix_future[c+1];
+                  var b_val = pix_row[c+2] - pix_future[c+2];
+
+              } else {
+
+              }
+
+              //var brightness = Math.floor((r_val + g_val  +  b_val) / 3 );
+              // osc.frequency.value = brightness/2
+              // osc.phase = g_val;
+              // osc.partials = [r_val, g_val, b_val];
+              
+        
+          
+                
+            if (q % 32 == 0) {
+              // bleu_note_collation.sort()
+              // bleu_parts = bleu_note_collation; 
+              
+                yr = 0;
+                yg = 0;
+                yb = 0; 
+                coll_r = 0;
+              coll_g = 0;
+              coll_b = 0;
+
+            }
+          
+                   
+             
+            color_in = r_val+','+g_val+','+b_val+',1';
+            ctx.beginPath();
+            ctx.moveTo(j, canvasWidth);
+            color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+',1';
+            ctx.strokeStyle ='rgba('+color_in+')';
+            
+            ctx.lineTo(j, 0);
+            ctx.closePath(); 
+            ctx.stroke();
+
+            c = c + 4;
+            q = q + 1; 
+
+                
+                
+            
+        } // end of seventh_tune
+
             if (playing_sound == 'sixth_tune') {
                 if (c % sampel_rate == 0 && c < 4012) {
                     // count change between this row and the future
@@ -682,7 +1371,7 @@ function drawProcess() {
                 old_diff = diff / 100; 
                 //var sum = Math.floor(pix_row[c] + pix_row[c+1] + pix_row[c+2]); 
 
-                diff = old_diff + pix_row[c]/ old_diff; 
+                diff = old_diff + pix_row[c] / old_diff; 
                 //console.log((pix_row[c]/pix_row[c+1])*100)
                
                 b = b + 1 
@@ -867,7 +1556,7 @@ function drawProcess() {
                   collect = collect + 1;
               }
 
-              var brightness = Math.floor((pix_row[c]  + pix_row[c+1]  +  pix_row[c + 2]) / 3 || 100);
+
               the_speed = brightness*2; 
               
               // var brightness = pix_row[c]; 
@@ -1691,7 +2380,7 @@ function drawProcess() {
             
           }
     row = row + 1;    
-    if (row > imgHeight) { // imgHeight
+    if (row > 50) { // imgHeight
       row = 0; 
       clearTimeout(timeOut); 
       nextImage();
