@@ -42,8 +42,11 @@
     <script type="text/javascript" src="js/Tone.min.js"></script>
     <script type="text/javascript" src="js/tonal.min.js"></script>
 
-    <script type="text/javascript" src="js/obj_re.js"></script>
-    <script type="text/javascript" src="js/instruments_cell.js"></script>  
+    <script type="text/javascript" src="js/sy_fm3.js"></script>
+    <script type="text/javascript" src="js/drums.js"></script> 
+    <script type="text/javascript" src="js/base.js"></script>  
+    <script type="text/javascript" src="js/harmonics.js"></script> 
+    <script type="text/javascript" src="js/controls.js"></script>       
 <script>
   $( function() {
     $( "#slider-range" ).slider({
@@ -71,53 +74,70 @@ var green_button = 'off'
 var bleu_button = 'off'
 $(document).on('click', '.onoff', function () {
 console.log(this.id)
+if (this.id == "next") {
+ nextImage()
+  }
   if (this.id == "red") {
     if ($('#play_red').val() == 'off') {
+        soundSys.play.red = true;
         $('#play_red').val('on');
-        $('#red').val('on');
-        //red_parts.start();     
+        $('#red').val('on');  
     } else {
       $('#play_red').val('off');
       $('#red').val('off');   
-      // red_parts.stop(); 
+      soundSys.play.red = false; 
     }
   }
   if (this.id == "green") {
     if ($('#play_green').val() == 'off') {
         $('#play_green').val('on');
         $('#green').val('on');
-        green_parts.start(); 
+        //fm_loop.start(0);
+        soundSys.play.green = true;
+
     } else {
       $('#play_green').val('off');   
       $('#green').val('off');
-      green_parts.stop(); 
+      soundSys.play.green = false;
+      
+      //fm_loop.stop()
     }
   }
   if (this.id == "bleu") {
     if ($('#play_bleu').val() == 'off') {
         $('#play_bleu').val('on');
         $('#bleu').val('on');
-        bleu_parts.start(); 
+        soundSys.play.bleu = true;
+        //drums.start(0);
+
     } else {
       $('#play_bleu').val('off');
       $('#bleu').val('off')
-      bleu_parts.stop();    
+      // drums.stop()
+      soundSys.play.bleu = false;   
     }
   }
    if (this.id == "brig") {
     if ($('#play_brig').val() == 'off') {
         $('#play_brig').val('on');
         $('#brig').val('on');
+        // pattern.start(0); 
+        soundSys.play.black = true; 
+ 
     } else {
       $('#play_brig').val('off');
       $('#brig').val('off')   
+      // pattern.stop()
+      soundSys.play.black = false; 
     }
   }
     if (this.id == "sum") {
     if ($('#play_sum').val() == 'off') {
         $('#play_sum').val('on');
         $('#sum').val('on');
+        soundSys.play.white = true; 
     } else {
+      soundSys.play.white = false; 
       $('#play_sum').val('off');
       $('#sum').val('off')   
     }
@@ -126,9 +146,11 @@ console.log(this.id)
     if ($('#play_diff').val() == 'off') {
         $('#play_diff').val('on');
         $('#diff').val('on');
+          soundSys.play.diff = true; 
     } else {
       $('#play_diff').val('off');
-      $('#diff').val('off')   
+      $('#diff').val('off')
+        soundSys.play.diff = false;    
     }
   }  
                      
@@ -353,23 +375,17 @@ $(document).on('click', '.synt', function () {
   </head>
   <body>
     <div>
-        <input id="start" value="start" type="button">
-        <input id="next" value="next" type="button">
-
+        <input id="next" value="next" class="btn btn-success btn-xs" type="button">
         <span> | </span><span id="contrl_this"><small>Press L</small></span><span id="contrl_this_value">|</span>
         <small> Red </small> : <input id="red" class="onoff btn btn-success btn-xs" value="off" type="button"> |
         <small> Green </small> : <input id="green" class="onoff btn btn-success btn-xs" value="off" type="button">
         <small> Bleu </small> : <input id="bleu" class="onoff btn btn-success btn-xs" value="off" type="button">
-        <small> Brig </small> : <input id="brig" class="onoff btn btn-success btn-xs" value="off" type="button">
-        <small> Sum </small> : <input id="sum" class="onoff btn btn-success btn-xs" value="off" type="button">
+        <small> Sum/Black </small> : <input id="brig" class="onoff btn btn-success btn-xs" value="off" type="button">
+        <small> Sum/White </small> : <input id="sum" class="onoff btn btn-success btn-xs" value="off" type="button">
         <small> Diff </small> : <input id="diff" class="onoff btn btn-success btn-xs" value="off" type="button">
-  
-
-  
-
     </div>
     <div class="canvas-container">
-        <canvas id="canvas" class="center" width="1024px" height="1000px"></canvas>
+        <canvas id="canvas" class="center" width="980px" height="1000px"></canvas>
         <div class="info"> Art 1923 </div>
     </div>
     <input id="first_tune" value="first_tune" type="button">
@@ -421,11 +437,9 @@ $(document).on('click', '.synt', function () {
         play bleu: <input type="text" id="play_bleu" value="off">
         play brig: <input type="text" id="play_brig" value="off">
         play sum: <input type="text" id="play_sum" value="off">
-play diff: <input type="text" id="play_diff" value="off">
+        play diff: <input type="text" id="play_diff" value="off">
         
 
-    <span ><img src="images/smiley_sm.png" id="smile" /></span>
-    <div>
       <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
     </div>
     <div id="slider-range" style="height:1200px;"></div>
