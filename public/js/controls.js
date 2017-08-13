@@ -7,7 +7,7 @@ soundSys.rect_loop = new Tone.Loop(function(time){
 }, "16n")
 
 
-Tone.Transport.bpm.value = 129;
+Tone.Transport.bpm.value = 120;
 Tone.Transport.start(0); 
 Tone.context.latencyHint = 'playback'
 soundSys.rect_loop.start(3); 
