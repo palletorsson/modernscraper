@@ -150,6 +150,7 @@ var soundSys = {
       return final_set;
   }, 
 
+
  iterOsci: function() {
       fmsynth.set({
         oscillator:{
@@ -275,12 +276,27 @@ function getPixelrowzoom(pixels, row) {
 }
 
 function createHandels() {
-    $.each(soundSysOne.threshold, function( index, value ) {
-        console.log( index + ": " + value );
-        // add 
+    var sliddiv = $(".sliders");
+    $.each(soundSysOne.threshold, function( key, value ) { 
+        sliddiv.append('<div id="'+key+'" class="myslider"></div>');  
+        $( "#"+key ).slider({
+          orientation: "vertical",
+          range: "min",
+          min: 0,
+          max: 100,
+          value: 60,
+          slide: function( event, ui ) {
+            soundSysOne.threshold[key]= ui.value;
+          }
+        }); 
+        
     });
+ 
+
 }
-createHandels()
+
+
+
 function drawProcess() { 
     // create image data for soundSysOne.canvas image and a blank image
     soundSysOne.newFrame = soundSysOne.ctx.createImageData(soundSysOne.canvas.width, soundSysOne.canvas.height);
@@ -419,8 +435,9 @@ var rect = function() {
     // soundSysOne.ctx.fillText( "____", 0, soundSysOne.row)// soundSysOne.aImages[iCurImage].id, soundSysOne.colors.sum_notes/13, soundSysOne.row+200 );
 
     soundSysOne.ctx.fillStyle = 'rgb(0,0,0)'
-      //console.log(soundSysOne.threshold.sum_notes)
+
     // DRUMS --------->
+        if (soundSysOne.row % 128 == 0) {
     if (soundSysOne.threshold.sum_notes > 450000) {        
         if (soundSysOne.kick_2_pattern[soundSysOne.drum_count] == "x") {  
             soundSysOne.kick_2.triggerAttack('+0.05'); 
@@ -446,7 +463,7 @@ var rect = function() {
         } 
     }
 
-
+}
     soundSysOne.drum_count++; 
     if (soundSysOne.drum_count > soundSysOne.snare_pattern.length-1) {
         soundSysOne.drum_count = 0; 
@@ -707,6 +724,6 @@ var next = document.getElementById('next');
   var inbetween2 = document.getElementById('inbetween2');
   inbetween2.addEventListener('click', function() { playing = 'inbetween2' });     
    
-
+createHandels()
 });
   
