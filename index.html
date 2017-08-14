@@ -34,11 +34,19 @@
            -o-transform: rotate(-90.0deg);  /* Opera 10.5 */
            -webkit-transform: rotate(-90.0deg);  /* Saf3.1+, Chrome */
         }
+        .myslider { 
+          height: 160px !important; 
+          width: 10px !important;
+          float: left;
+          margin-right: 10px;  
+
+
+        }
     </style>
 
     <script type="text/javascript" src="js/jquery.js"></script>
-    <script type="text/javascript"  src="js/jquery-ui.js"></script>
-    <script type="text/javascript"  src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/jquery-ui.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
     <script type="text/javascript" src="js/Tone.min.js"></script>
     <script type="text/javascript" src="js/tonal.min.js"></script>
 
@@ -370,6 +378,16 @@ $(document).on('click', '.synt', function () {
 
       }
     
+Interface.Slider({
+      name : "BPM",
+      min : 80,
+      max : 200,
+      value : Tone.Transport.bpm.value,
+      drag : function(val){
+        Tone.Transport.bpm.value = val;
+    
+     }
+   });
     });
   </script>
   </head>
@@ -388,6 +406,19 @@ $(document).on('click', '.synt', function () {
         <canvas id="canvas" class="center" width="980px" height="1000px"></canvas>
         <div class="info"> Art 1923 </div>
     </div>
+
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script>
+    var sliddiv = $(".sliders");
+    sliddiv.append("<ul>")
+    $.each(soundSysOne.threshold, function( key, value ) { 
+        sliddiv.append('<li id="'+key+'" style={ height:"200px", float: "left" } ></li>');  
+    });
+    sliddiv.append("<ul>")
+  
+  </script>
+
+<div class="sliders" style="width:100%"></div>
     <input id="first_tune" value="first_tune" type="button">
     <input id="drum1" class="drums" value="l1" type="button">
         <input id="snareLoop" class="drums btn btn-success btn-xs" value="s1" type="button">
