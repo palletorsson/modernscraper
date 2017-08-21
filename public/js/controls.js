@@ -7,11 +7,11 @@ soundSys.rect_loop = new Tone.Loop(function(time){
 }, "16n")
 
 
-Tone.Transport.bpm.value = 120;
+Tone.Transport.bpm.value = 91;
 Tone.Transport.start(0); 
 Tone.context.latencyHint = 'playback'
 soundSys.rect_loop.start(3); 
-soundSys.FelizPart.start(2);  
+// soundSys.FelizPart.start(2);  
 
 // very important ----------------
 // kick_loop_1.start(3);

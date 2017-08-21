@@ -17,11 +17,12 @@ soundSys.open_pattern =  ["-","-","-","-", "-","-"," ","-", "-","-","-","-", "-"
 
 soundSys.hat = new Tone.Sampler({
   "url" : "/audio/hip-hop/hi-hat.wav", 
+    "volume": -6  
 }).toMaster();
 
 soundSys.kick_1 = new Tone.Sampler({
     "url" : "/audio/techno/kick.wav",
-     "volume": -6,
+     "volume": -8,
       "envelope" : {
       "attack" : 0.001,
       "decay" : 0.02,
@@ -32,22 +33,22 @@ soundSys.kick_1 = new Tone.Sampler({
 
 soundSys.snare = new Tone.Sampler({
     "url" : "/audio/hip-hop/snare.wav", 
-    "volume": -6
+    "volume": -8
 }).toMaster()
 
 soundSys.kick_2 = new Tone.Sampler({
-    "url" :  "/audio/techno/kick.wav", 
-     "filter" : {
-      "type" : "lowpass",
-      "rolloff" : -24,
-      "Q" : 4,
-    }, 
-    "volume": -1, 
+    "url" : "./audio/hip-hop/kick.wav",
+    "volume": -4,  
+    envelope:{
+        decay:0.01,
+        sustain:0.5,
+        release:0.01,
+      }
 }).toMaster()
 
 soundSys.snare_2 = new Tone.Sampler({
     "url" : "./audio/techno/snare.wav",
-    "volume": -2,  
+    "volume": -4,  
     envelope:{
         decay:0.01,
         sustain:0.5,
@@ -59,10 +60,17 @@ soundSys.hat_3 = new Tone.Sampler({
   "url" : "./audio/techno/hi-hat.wav", 
 }).toMaster()
 
+soundSys.op_hat = new Tone.Sampler({
+  "url" : "./audio/505/hho.mp3", 
+}).toMaster()
+
+soundSys.bell = new Tone.Sampler({
+  "url" : "./audio/505/agogoLow.mp3", 
+}).toMaster()
 
 soundSys.clap = new Tone.Sampler({
   "url" : "./audio/FactoryKit/Clap/PD_Factory_Clap_02.wav",
-  "volume": -1   
+  "volume": -10  
 }).toMaster(); 
 
 // EFFECTS ------------------->
@@ -78,7 +86,7 @@ soundSys.swoosh = new Tone.NoiseSynth().toMaster({
         "sustain": 0,
         "release": 0.2
     },
-    "volume": 10, 
+    "volume": 2, 
 });
   
 soundSys.raiding = new Tone.GrainPlayer({

@@ -38,9 +38,12 @@
           height: 160px !important; 
           width: 10px !important;
           float: left;
-          margin-right: 10px;  
-
-
+          margin-right: 100px;  
+margin-left: 20px;  
+margin-right: 10px;  
+        }
+        .sliders {
+          width:1000px;
         }
     </style>
 
@@ -50,7 +53,7 @@
     <script type="text/javascript" src="js/Tone.min.js"></script>
     <script type="text/javascript" src="js/tonal.min.js"></script>
 
-    <script type="text/javascript" src="js/sy_fm3.js"></script>
+    <script type="text/javascript" src="js/sy_fm4.js"></script>
     <script type="text/javascript" src="js/drums.js"></script> 
     <script type="text/javascript" src="js/base.js"></script>  
     <script type="text/javascript" src="js/harmonics.js"></script> 
@@ -411,14 +414,14 @@ Interface.Slider({
   <script>
     var sliddiv = $(".sliders");
     sliddiv.append("<ul>")
-    $.each(soundSysOne.threshold, function( key, value ) { 
+    $.each(soundSys.threshold, function( key, value ) { 
         sliddiv.append('<li id="'+key+'" style={ height:"200px", float: "left" } ></li>');  
     });
     sliddiv.append("<ul>")
   
   </script>
-
-<div class="sliders" style="width:100%"></div>
+<div class="notes"></div>
+<div class="sliders"></div>
     <input id="first_tune" value="first_tune" type="button">
     <input id="drum1" class="drums" value="l1" type="button">
         <input id="snareLoop" class="drums btn btn-success btn-xs" value="s1" type="button">

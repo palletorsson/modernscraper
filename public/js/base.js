@@ -58,13 +58,15 @@ soundSys.chord_notes = [ "G2", "Ab2", "Eb2", "F2", ];
 soundSys.tempo_pattern = ["x","-","-","-", "x","x","-","-", "x","x","x","-", "x","x","x","x", ]
 soundSys.temp_count = 0; 
 soundSys.bassPart = new Tone.Pattern(function(time, note){
-    if (soundSys.tempo_pattern[soundSys.temp_count] == "x") {
-        soundSys.monoBaseGuitar.triggerAttackRelease(note, "32n", time);
-    }
+    //if (soundSys.tempo_pattern[soundSys.temp_count] == "x") {
+        soundSys.monoBaseGuitar.triggerAttackRelease(note, "64n", time);
+    //}
  
-}, ["F4", "C3", "C3" ,"C3"  ], "up").start(5);
-soundSys.bassPart.interval = "16n"; 
-soundSys.monoBaseGuitar.volume.rampTo(-100, 10)
+}, ["F4", "C3", "C3" ,"C3"  ], "up");
+
+soundSys.bassPart.interval = "32n"; 
+
+soundSys.monoBaseGuitar.volume.rampTo(-100, 1)
 // Bass -------------->
 soundSys.bassline = new Tone.Synth();
 soundSys.basslineVolume = new Tone.Volume(-10);
@@ -79,7 +81,20 @@ soundSys.base_loop = new Tone.Loop(function(time){
 }, "2n")
 
 
-soundSys.bassline = new Tone.FMSynth();
+soundSys.bassline = new Tone.FMSynth({
+    "oscillator": {
+        "type": "pulse",
+        "width" : 0.3
+    },
+    "envelope": {
+        "attack": 0.01,
+        "decay": 0.1,
+        "sustain": 0.3,
+        "releaseCurve" : "bounce",
+        "release": 0.4
+    }, 
+  
+});
 soundSys.basslineVolume = new Tone.Volume(-4.25);
 soundSys.basslineDistortion = new Tone.Distortion(2.5);
 soundSys.basslineDelay = new Tone.FeedbackDelay(0.25); 
@@ -107,10 +122,4 @@ soundSys.bassBounce = new Tone.Synth({
     }, 
     "volume": -12, 
 });
-// Pattern -------------------- >
-soundSys.FelizPart = new Tone.Pattern(function(time, note){
-  soundSys.monoBase.triggerAttackRelease(note, "32n", 0.01); 
-}, ["C4", "F4", "C1", "F4",], "down");
 
-soundSys.FelizPart.interval = "16n"; 
-soundSys.monoBase.volume = -100; 
