@@ -120,9 +120,11 @@ soundSys.diff = new Tone.PolySynth(6, Tone.MonoSynth, {
       }
 }).toMaster();
 
+
+// http://www.guitarland.com/MusicTheoryWithToneJS/PlayChords.html
 soundSys.diff = new Tone.PolySynth().toMaster();
 //BLEU BASE MONO ------------------------------
-soundSys.bleu = new Tone.MonoSynth({ // pianoetta
+soundSys.bleu = new Tone.PolySynth(6, Tone.MonoSynth, {
           "oscillator": {
               "type": "square"
           },
@@ -165,7 +167,7 @@ soundSys.FelizPart = new Tone.Pattern(function(time, note){
 }, ["C4", "F4", "C1", "F4",], "upDown");
 
 soundSys.FelizPart.interval = "64n"; 
-soundSys.bleu.volume.value = -60; 
+soundSys.bleu.volume.value = -10; 
 
 //WHITE POLY SYNTH
 //soundSys.white = new Tone.PolySynth(10).toMaster();
@@ -191,9 +193,6 @@ soundSys.fx_distortion = new Tone.Distortion(0.8);
 soundSys.fx_distortion.wet.value = 0.5;
 soundSys.white.chain(soundSys.fx_distortion);
 
-// BLACK FM 
-soundSys.black = new Tone.FMSynth();
-
 soundSys.sum = new Tone.FMSynth({
       "modulationIndex" : 12.22,
       "envelope" : {
@@ -208,12 +207,13 @@ soundSys.sum = new Tone.FMSynth({
         "decay" : 0.01
       }
     }).toMaster(); 
-soundSys.sum.volume.value = -17;
+soundSys.sum.volume.value = -10;
 // PATTERN
 
 soundSys.FullPart = new Tone.Pattern(function(time, note){
-   soundSys.black.triggerAttackRelease(note, "16n")
-}, ["ab6", "G6", "D6",  ], "upDown").start(); 
+   soundSys.red.triggerAttackRelease(note, "16n");
+   console.log(note);
+}, ["ab3", "G3", "D3", "C3" ], "upDown"); 
 
 soundSys.FullPart.interval = "8n";
-soundSys.black.volume.value = -100; 
+soundSys.black.volume.value = 10; 

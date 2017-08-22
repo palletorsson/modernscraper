@@ -25,7 +25,7 @@ soundSys.monoBase = new Tone.MonoSynth({
     "volume": -16
   }).toMaster();
 
-soundSys.monoBaseGuitar = new Tone.MonoSynth({
+soundSys.black = new Tone.MonoSynth({
     "oscillator": {
         "type": "fmsquare5",
     "modulationType" : "triangle",
