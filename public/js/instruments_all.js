@@ -5,6 +5,12 @@ if (oscillator == true) {
       "volume" : 1
     }).toMaster().start(); 
     osc.type = "sawtooth6";
+    var osc2 = new Tone.Oscillator({
+      "frequency" : 440,
+      "volume" : 1
+    }).toMaster().start(); 
+    osc.type = "sine";
+    
 }
 
 var synth = new Tone.PolySynth(4, Tone.Synth, {

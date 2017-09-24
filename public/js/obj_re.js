@@ -87,7 +87,7 @@ var drums = true;
 var base_index = 0; 
 var future = 4; 
 var soundsys = false; 
-var oscillator = false;  
+var oscillator = true;  
 var osc_partials = [];
 var diff = 100; 
 var old_diff = 110;
@@ -156,6 +156,7 @@ var change_set = false;
 var getAllval = false; 
 var the_speed = 200; 
 var list = []; 
+var o = 0; 
 $(function(){
     // creating canvas objects
     canvas = document.getElementById('canvas');
@@ -319,14 +320,14 @@ function drawProcess() {
                 ctx.moveTo(j, canvasWidth);
                 color_in = pix_row[c]+','+pix_row[c+1]+','+pix_row[c+2]+','+'0.7';
                 // console.log(color_in)
-                ctx.strokeStyle ='rgba('+color_in+')';
+                //ctx.strokeStyle ='rgba('+color_in+')';
                 
-                ctx.lineTo(j, 0);
-                ctx.closePath(); 
-                ctx.stroke();
+                //ctx.lineTo(j, 0);
+                //ctx.closePath(); 
+                //ctx.stroke();
 
                 if (q % sampel_rate == 0 && c < pix_row.length+34) {
-                  ctx.fillText("x", c/4, 100);
+                    ctx.fillText("x", c/4, 100);
                     var red = pix_row[c];
                     var green = pix_row[c+1];
                     var bleu = pix_row[c+2];
@@ -372,8 +373,8 @@ function drawProcess() {
 
                           var val = (Math.abs(c/100)); 
                           console.log(val); 
-                          piano.volume.value = val *-1;
-                          piano.triggerAttackRelease(final_note, undefined, 0.1);
+                          //piano.volume.value = val *-1;
+                          //piano.triggerAttackRelease(final_note, undefined, 0.1);
                           
                         } 
                         if (green_rel > 0 ) {
@@ -387,7 +388,34 @@ function drawProcess() {
 
                        
                     }
-
+                     var rand = Math.floor(Math.random() * 10); 
+              phase =  phase * Math.PI / 180;
+              var amp = bleu/5 - thickness / 2;
+              var freq = 2 * Math.PI * (1 / wavelength);
+              var yOrigin = height / 2 + j - amplitude;
+              var y1, y2;
+              console.log(freq, old_freq)
+              var myfreq = Math.floor(freq*1000);
+              osc.frequency.value = amp*1000 ;
+              osc.phase = phase;
+              osc2.frequency.value = myfreq ;
+              console.log(myfreq , old_freq)
+              osc.phase = phase;
+              var old_freq = amp*1000 ;
+              o = o + 0.1; 
+              if (o > 100) {
+                o=0; 
+              }
+              ctx.beginPath();
+                ctx.lineWidth = 15;
+                  ctx.strokeStyle ='rgba('+color_in+')';
+              for ( var i = 0; i < width; i++) { 
+                  y1 = amp * Math.sin(phase + freq * i) + yOrigin; 
+                  y2 = amp * Math.sin(phase + freq * (i + 1)) + yOrigin; 
+                  ctx.moveTo(i , y1); 
+                  ctx.lineTo(i + 1, y2); 
+              }
+              ctx.stroke();
                 } // end of sampel_rate
                 q = q + 1; 
                 c = c + 4; 
@@ -400,16 +428,16 @@ function drawProcess() {
               var val = (Math.abs(red/100)); 
               console.log(val); 
               synth.volume.value = val *-1;
-              synth.triggerAttackRelease(final_note, undefined, 0.1);
+              //synth.triggerAttackRelease(final_note, undefined, 0.1);
               
 
           }
           if (z % 2 == 0) {
             //osc.stop()
-            hat.triggerAttack()
+           // hat.triggerAttack()
          
         } else {
-           base.triggerAttackRelease(list, undefined, 0.01);
+        //   base.triggerAttackRelease(list, undefined, 0.01);
         }
           if (z % 8 == 0) {
             snare.triggerAttack() // osc.start()

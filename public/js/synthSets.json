@@ -1,0 +1,464 @@
+{
+  "synth": [
+    {
+      "oscillator": {
+        "type": "pulse",
+        "width": 0.8
+      },
+      "envelope": {
+        "attack": 0.01,
+        "decay": 0.05,
+        "sustain": 0.2,
+        "releaseCurve": "bounce",
+        "release": 0.4
+      }
+    },
+    {
+      "oscillator": {
+        "type": "square16",
+        "count": 23,
+        "spread": 23
+      },
+      "envelope": {
+        "attack": 0.1,
+        "decay": 0.01,
+        "sustain": 0.05,
+        "release": 0.001,
+        "attackCurve": "exponential"
+      }
+    },
+    {
+      "oscillator": {
+        "type": "fatcustom",
+        "partials": [
+          0.2,
+          1,
+          0,
+          0.5,
+          0.1
+        ],
+        "spread": 40,
+        "count": 3
+      },
+      "envelope": {
+        "attack": 0.001,
+        "decay": 1.6,
+        "sustain": 0,
+        "release": 1.6
+      }
+    },
+    {
+      "portamento": 0.2,
+      "oscillator": {
+        "type": "sawtooth"
+      },
+      "envelope": {
+        "attack": 0.03,
+        "decay": 0.1,
+        "sustain": 0.2,
+        "release": 0.02
+      },
+      "volume": -10
+    },
+    {
+      "oscillator": {
+        "type": "square"
+      },
+      "filter": {
+        "Q": 2,
+        "type": "lowpass",
+        "rolloff": -12
+      },
+      "envelope": {
+        "attack": 0.005,
+        "decay": 3,
+        "sustain": 0,
+        "release": 0.45
+      },
+      "filterEnvelope": {
+        "attack": 0.001,
+        "decay": 0.32,
+        "sustain": 0.9,
+        "release": 3,
+        "baseFrequency": 700,
+        "octaves": 2.3
+      },
+      "volume": -10
+    }
+  ],
+  "mono": [
+    {
+      "oscillator": {
+        "type": "fatsawtooth"
+      },
+      "envelope": {
+        "attack": 0.214,
+        "decay": 0.098,
+        "sustain": 0.2,
+        "release": 0.5
+      },
+      "filterEnvelope": {
+        "attack": 0.01,
+        "decay": 0.1,
+        "sustain": 0.4,
+        "release": 0.15,
+        "min": 9000,
+        "max": 2000
+      },
+      "filter": {
+        "type": "lowpass",
+        "rolloff": -12,
+        "Q": 4
+      },
+      "volume": -16
+    },
+    {
+      "oscillator": {
+        "type": "fmsquare5",
+        "modulationType": "triangle",
+        "modulationIndex": 6,
+        "harmonicity": 0.501
+      },
+      "filter": {
+        "Q": 1,
+        "type": "lowpass",
+        "rolloff": -12
+      },
+      "envelope": {
+        "attack": 0.001,
+        "decay": 0.1,
+        "sustain": 1.4,
+        "release": 2
+      },
+      "filterEnvelope": {
+        "attack": 0.01,
+        "decay": 0.1,
+        "sustain": 0.8,
+        "release": 1.5,
+        "baseFrequency": 100,
+        "octaves": 2.4
+      },
+      "volume": -13
+    }
+  ],
+  "noice": [
+    {
+      "type": "white",
+      "envelope": {
+        "attack": 0.0015,
+        "decay": 0.02,
+        "sustain": 0
+      }
+    }
+  ],
+  "am": [
+    {
+      "harmonicity": 3.01,
+      "modulationIndex": 14,
+      "oscillator": {
+        "type": "triangle"
+      },
+      "envelope": {
+        "attack": 0.2,
+        "decay": 0.3,
+        "sustain": 0.1,
+        "release": 1.2
+      },
+      "modulation": {
+        "type": "square"
+      },
+      "modulationEnvelope": {
+        "attack": 0.01,
+        "decay": 0.5,
+        "sustain": 0.2,
+        "release": 0.1
+      }
+    },
+    {
+      "harmonicity": 3.999,
+      "oscillator": {
+        "type": "sawtooth"
+      },
+      "envelope": {
+        "attack": 0.03,
+        "decay": 0.1,
+        "sustain": 0.5,
+        "release": 0.8,
+        "releaseCurve": "bounce"
+      },
+      "modulation": {
+        "volume": 24,
+        "type": "pulse"
+      },
+      "modulationEnvelope": {
+        "attack": 2,
+        "decay": 3,
+        "sustain": 0.8,
+        "release": 0.1
+      }
+    },
+    {
+      "harmonicity": 2.01,
+      "modulationIndex": 18,
+      "oscillator": {
+        "type": "sine"
+      },
+      "envelope": {
+        "attack": 0.2,
+        "decay": 0.3,
+        "sustain": 0.1,
+        "release": 1.2
+      },
+      "modulation": {
+        "type": "square"
+      },
+      "modulationEnvelope": {
+        "attack": 0.1,
+        "decay": 0.5,
+        "sustain": 0.22,
+        "release": 0.11
+      }
+    },
+    {
+      "harmonicity": 6.999,
+      "oscillator": {
+        "type": "fatsawtooth"
+      },
+      "envelope": {
+        "attack": 0.03,
+        "decay": 0.1,
+        "sustain": 0.5,
+        "release": 0.8,
+        "releaseCurve": "bounce"
+      },
+      "modulation": {
+        "volume": 24,
+        "type": "pulse"
+      },
+      "modulationEnvelope": {
+        "attack": 2,
+        "decay": 3,
+        "sustain": 0.8,
+        "release": 0.1
+      }
+    }
+  ],
+  "fm": [
+    {
+      "harmonicity": 3.01,
+      "modulationIndex": 14,
+      "oscillator": {
+        "type": "triangle"
+      },
+      "envelope": {
+        "attack": 0.2,
+        "decay": 0.3,
+        "sustain": 0.1,
+        "release": 1.2
+      },
+      "modulation": {
+        "type": "square"
+      },
+      "modulationEnvelope": {
+        "attack": 0.01,
+        "decay": 0.5,
+        "sustain": 0.2,
+        "release": 0.1
+      },
+      "volume": 12
+    },
+    {
+      "volume": 1,
+      "harmonicity": 2,
+      "modulationIndex": 10,
+      "detune": 15,
+      "oscillator": {
+        "type": "square"
+      },
+      "envelope": {
+        "attack": 0.009,
+        "decay": 0.7,
+        "sustain": 0,
+        "release": 1.2
+      },
+      "filterEnvelope": {
+        "attack": 0.02,
+        "decay": 0.2,
+        "sustain": 1,
+        "release": 0.2,
+        "min": 20,
+        "max": 20,
+        "exponent": 2
+      },
+      "modulation": {
+        "type": "square"
+      },
+      "modulationEnvelope": {
+        "attack": 0.005,
+        "decay": 0.4,
+        "sustain": 0,
+        "release": 1.2
+      }
+    },
+    {
+      "volume": 1,
+      "harmonicity": 1,
+      "modulationIndex": 10,
+      "detune": 15,
+      "oscillator": {
+        "type": "sine"
+      },
+      "envelope": {
+        "attack": 0.00708,
+        "decay": 1.88,
+        "sustain": 0.3,
+        "release": 4
+      },
+      "filterEnvelope": {
+        "attack": 0.02,
+        "decay": 0.2,
+        "sustain": 1,
+        "release": 0.2,
+        "min": 20,
+        "max": 20,
+        "exponent": 2
+      },
+      "modulation": {
+        "type": "sine"
+      },
+      "modulationEnvelope": {
+        "attack": 0.0015,
+        "decay": 15.2,
+        "sustain": 0.2,
+        "release": 4
+      }
+    },
+    {
+      "volume": 1,
+      "harmonicity": 3,
+      "modulationIndex": 0.67,
+      "detune": 0,
+      "oscillator": {
+        "type": "sine"
+      },
+      "envelope": {
+        "attack": 0.00972,
+        "decay": 0.245,
+        "sustain": 0,
+        "release": 0.458
+      },
+      "filterEnvelope": {
+        "attack": 0.0147,
+        "decay": 0.131,
+        "sustain": 0,
+        "release": 0.05,
+        "min": 20,
+        "max": 20,
+        "exponent": 2
+      },
+      "modulation": {
+        "type": "triangle"
+      },
+      "modulationEnvelope": {
+        "attack": 0.0257,
+        "decay": 0.6,
+        "sustain": 1,
+        "release": 0.519
+      }
+    },
+    {
+      "volume": 1,
+      "harmonicity": 3,
+      "modulationIndex": 0.67,
+      "detune": 0,
+      "oscillator": {
+        "type": "sine"
+      },
+      "envelope": {
+        "attack": 0.00972,
+        "decay": 0.245,
+        "sustain": 0,
+        "release": 0.458
+      },
+      "filterEnvelope": {
+        "attack": 0.0147,
+        "decay": 0.131,
+        "sustain": 0,
+        "release": 0.05,
+        "min": 20,
+        "max": 20,
+        "exponent": 2
+      },
+      "modulation": {
+        "type": "triangle"
+      },
+      "modulationEnvelope": {
+        "attack": 0.0257,
+        "decay": 0.6,
+        "sustain": 1,
+        "release": 0.519
+      }
+    },
+    {
+      "volume": 1,
+      "harmonicity": 3,
+      "modulationIndex": 0.67,
+      "detune": 0,
+      "oscillator": {
+        "type": "sine"
+      },
+      "envelope": {
+        "attack": 0.00972,
+        "decay": 0.245,
+        "sustain": 0,
+        "release": 0.458
+      },
+      "filterEnvelope": {
+        "attack": 0.0147,
+        "decay": 0.131,
+        "sustain": 0,
+        "release": 0.05,
+        "min": 20,
+        "max": 20,
+        "exponent": 2
+      },
+      "modulation": {
+        "type": "triangle"
+      },
+      "modulationEnvelope": {
+        "attack": 0.0257,
+        "decay": 0.6,
+        "sustain": 1,
+        "release": 0.519
+      }
+    }
+  ],
+  "poly": [
+    {
+      "oscillator": {
+        "type": "fatsawtooth4",
+        "spread": 30,
+        "count": 15
+      },
+      "envelope": {
+        "attack": 0.4,
+        "decay": 0.01,
+        "sustain": 1,
+        "attackCurve": "sine",
+        "releaseCurve": "sine",
+        "release": 0.4
+      }
+    },
+    {
+      "volume": -10,
+      "oscillator": {
+        "partials": [
+          1,
+          2,
+          5
+        ]
+      },
+      "portamento": 0.005
+    }
+  ]
+}

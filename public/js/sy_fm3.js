@@ -6,14 +6,17 @@ var soundSys = {
   sampel_rate: 16,
   rgb_colors: '',
   vel: 0,
+  cf: 0, 
   alien_temp: 0, 
-  future: 8,
+  future: 32,
   base_pos: 0,
   feliz_notes: 0,
   the_length: 0,
   base_tone_val: 0,
   send_base_tones: 0, 
   first_base: 0, 
+  drums_on: true, 
+  logger: '', 
   colors: {
     red: 0,
     green: 0,
@@ -58,26 +61,30 @@ var soundSys = {
     sum_notes: 0, 
     diff_notes: 0, 
     red_in: 31,
-    green_in: 27,
-    bleu_in: 23,
-    black_in:140, // > sum 
-    white_in:90, // < sum
+    green_in: 23,
+    bleu_in: 50,
+    black_in: 110, // > sum 
+    white_in: 400, // < sum
     yellow_in:[140, 100, 70],
     magenta_in:[100, 100, 80],
-    diff_in: 100,
+    diff_in: 50,
     red_rel_in: 0,
     green_rel_in: 0,
-    bleu_rel_in: 23,
+    bleu_rel_in: 30,
     red_rel_in: 0,
     green_rel_in: 0,
     red_out: 2, // notes.length
-    green_out: 2,
-    bleu_out: 1,
-    black_out: 5, 
-    diff_out: 3,
+    green_out: 1,
+    bleu_out: 3,
+    black_out: 0, 
+    diff_out: 0,
     black_out_base:5, 
     white_out:4,
-  },  
+  },
+  fm_control: {
+    count: 3, 
+    spread: 21
+  }, 
   divitions: {
     red: 0,
     green: 0,
@@ -115,7 +122,7 @@ var soundSys = {
   zooming : 'base',
   creatSpecialProgression: function(progress, octave) {
       final_set = [];
-      for (j=0; j < 3; j++) {
+      for (j=0; j < 10; j++) {
         for (i=0; i < progress.length; i++) {
           var oct = octave+j;
           var nstr = oct.toString();
@@ -196,8 +203,41 @@ var soundSys = {
     var sum = Math.floor((pix_row_1_r + pix_row_1_g + pix_row_1_b) / 3);
     var sum_f = Math.floor((pix_row_f_r + pix_row_f_g + pix_row_f_b) / 3);
     diff = (sum - sum_f);
-    return diff; 
+    return Math.abs(diff); 
   }, 
+  synthSets: $.getJSON("./js/synthSets.json"),
+  setcount: {
+    red: 0,
+    green: 0,
+    bleu: 0
+  },
+  synthdefaults: {
+    fm: {
+      harmonicity:3,
+      modulationIndex:10,
+      detune:0,
+      oscillator:{
+        type:"sine"
+      },
+      envelope:{
+        attack:0.01,
+        decay:0.01,
+        sustain:1,
+        release:0.5,
+      },
+      modulation:{
+        type:"square",
+      },
+      modulationEnvelope:{
+        attack:0.5,
+        decay:0,
+        sustain:1,
+        release:0.5,
+      }
+
+    }
+  }
+
 
 
 };
@@ -209,7 +249,7 @@ $(function(){
     // creating canvas objects
     soundSysOne.canvas = document.getElementById('canvas');
     soundSysOne.ctx = soundSysOne.canvas.getContext('2d');
-    soundSysOne.ctx.lineWidth = 8;
+    //soundSysOne.ctx.lineWidth = 8;
     $.getJSON( "../../hist.json", function( obj ) {
       soundSysOne.source = '/images/'+soundSysOne.folder+'/'+obj[0].filename+'.jpg'
       $(".images").append('<img src="'+soundSysOne.source+'" id="first"/>'); 
@@ -278,20 +318,61 @@ function getPixelrowzoom(pixels, row) {
 function createHandels() {
     var sliddiv = $(".sliders");
     $.each(soundSysOne.threshold, function( key, value ) { 
-        sliddiv.append('<div id="'+key+'" class="myslider"></div>');  
+        sliddiv.append('<div id="'+key+'" class="myslider"><span id="_'+key+'">'+key+'<span></div>');  
         $( "#"+key ).slider({
           orientation: "vertical",
           range: "min",
           min: 0,
           max: 100,
-          value: 60,
+          value: value,
           slide: function( event, ui ) {
             soundSysOne.threshold[key]= ui.value;
-          }
+            $( '#_'+key).text(ui.value); 
+           }
         }); 
         
     });
- 
+    var level1 = 0; 
+    var level2 = 1; 
+    $.each(soundSysOne.synthdefaults.fm, function( key, value ) { 
+      console.dir(soundSysOne.synthdefaults.fm[key])
+      if (typeof soundSysOne.synthdefaults.fm[key] == "object") {
+      $.each(value, function( k, v ) {
+
+          sliddiv.append('<div id="'+key+k+'" class="myslider"><span id="_'+key+k+'">'+key+k+'<span></div>');  
+       $( "#"+key+k ).slider({
+          orientation: "vertical",
+          range: "min",
+          min: 0,
+          max: 100,
+          value: v,
+          slide: function( event, ui ) {
+            soundSysOne.green[key][k] = ui.value/1000;
+            $( '#_'+key+k).text(ui.v); 
+            console.log(soundSysOne.green[key][k], ui.value)
+           }
+        });
+
+       });
+    } else { 
+      sliddiv.append('<div id="'+key+'" class="myslider"><span id="_'+key+'">'+key+'<span></div>');  
+       $( "#"+key ).slider({
+          orientation: "vertical",
+          range: "min",
+          min: 0,
+          max: 100,
+          value: value,
+          slide: function( event, ui ) {
+            soundSysOne.green[key].value = ui.value;
+            $( '#_'+key).text(ui.value); 
+            console.log(soundSysOne.green[key], ui.value)
+           }
+        }); 
+
+     }
+
+    });
+  
 
 }
 
@@ -327,6 +408,58 @@ function nextImage() {
     }
 } // end of nextImage
 
+var getNoteToPlay = function(collection, notes, div) {
+    var collLength = collection.length;  
+    var theNote = notes[Math.floor(collLength/div)];  
+    return theNote;     
+}
+
+var getNoteToPlayPos = function(collection, notes, div, i) {
+    var posValue = collection[i].pos;  
+    var theNote = notes[Math.floor(posValue/div)];  
+    return theNote;     
+}
+
+
+var setVolume = function(collection, div, tran, type) {
+    var collLength = collection.length;  
+    var vol = Math.floor(collLength / div); 
+    if (type == '-') {
+       vol = vol - tran;
+      vol = vol*-1;  
+       
+    } else {
+       vol = vol + tran; 
+    }  
+    return vol; 
+} 
+
+var setVolumeValue = function(collection, div, tran, i, type) {
+    var collValue = collection[i].value;  
+    var vol = Math.floor(collValue / div); 
+    if (type == '-') {
+        vol = vol - tran;
+        vol = vol*-1;        
+    } else {
+        vol = vol + tran; 
+    }  
+    return vol; 
+}  
+
+var setCount = function(num, max) {
+    num++;
+    if (num > max-1) {
+        num = 0; 
+    } 
+    return num; 
+}  
+
+  soundSysOne.setcount.green = setCount(soundSysOne.setcount.green, soundSysOne.templ)
+
+              soundSysOne.setcount.green + 1;
+              if (soundSysOne.setcount.green > soundSysOne.templ-1) {
+                  soundSysOne.setcount.green = 0; 
+              } 
 
 var rect = function() {
 
@@ -336,7 +469,7 @@ var rect = function() {
     soundSysOne.pix_future = getPixelrowzoom(pixelArray, soundSysOne.row+soundSysOne.future); 
        
       for (j = 0; j < soundSysOne.canvas.height; j = j + 1) {
-          if (soundSysOne.seed_img == true && soundSysOne.variables.c % 32 == 0) { 
+          if (soundSysOne.seed_img == true && soundSysOne.variables.c % 4 == 0) { 
               soundSysOne.ctx.beginPath();
               soundSysOne.ctx.moveTo(j, soundSysOne.canvas.width);
               soundSysOne.rgb_colors = soundSysOne.pix_row[soundSysOne.variables.c]+','+soundSysOne.pix_row[soundSysOne.variables.c+1]+','+soundSysOne.pix_row[soundSysOne.variables.c+2]+',0.9';
@@ -372,10 +505,10 @@ var rect = function() {
                   soundSysOne.marks  = soundSysOne.marks  + 1; 
               }
               
-              if (soundSysOne.colors.bleu_rel > 50) {// soundSysOne.threshold.bleu_in) {
+              if (soundSysOne.colors.bleu_rel > soundSysOne.threshold.bleu_in) {// soundSysOne.threshold.bleu_in) {
                   soundSysOne.collections.bleu_note_collection.push({"row": soundSysOne.row, "value": soundSysOne.colors.bleu_rel, "pos": soundSysOne.variables.c})
                   soundSysOne.ctx.fillText("b", 400-c, soundSysOne.row+soundSysOne.collections.bleu_rel);
-                 // console.log("b", soundSysOne.colors.bleu_rel)
+                 //console.log("b", soundSysOne.colors.bleu_rel)
                   soundSysOne.marks  = soundSysOne.marks  + 1; 
               }
               if (soundSysOne.colors.green_rel > soundSysOne.threshold.green_in) {
@@ -384,12 +517,12 @@ var rect = function() {
                   soundSysOne.marks  = soundSysOne.marks  + 1; 
               }
 
-              if (soundSysOne.colors.sum > soundSysOne.threshold.black_in) { 
+              if (soundSysOne.colors.sum > soundSysOne.threshold.white_in) { 
                   soundSysOne.collections.white_note_collection.push({"row": soundSysOne.row, "value": soundSysOne.colors.sum, "pos": soundSysOne.variables.c})
                   // soundSysOne.ctx.8fillText("+", c, soundSysOne.row+soundSysOne.colors.sum);      
                   soundSysOne.marks  = soundSysOne.marks  + 1;              
               }
-              if (soundSysOne.colors.sum < 80) { 
+              if (soundSysOne.colors.sum < soundSysOne.threshold.black_in) { 
                   soundSysOne.collections.black_note_collection.push({"row": soundSysOne.row, "value": soundSysOne.colors.sum, "pos": soundSysOne.variables.c})
                   // soundSysOne.ctx.fillText("-", c, soundSysOne.row+soundSysOne.colors.sum); 
                   soundSysOne.marks  = soundSysOne.marks  + 1;    
@@ -411,7 +544,7 @@ var rect = function() {
 
               if (Math.abs(soundSysOne.colors.diff) > soundSysOne.threshold.diff_in) {                 
                   soundSysOne.collections.diff_note_collection.push({"row": soundSysOne.row, "value": soundSysOne.colors.sum, "pos": soundSysOne.variables.c})
-                  //soundSysOne.ctx.fillText("-"+c, c, soundSysOne.row+soundSysOne.colors.sum); 
+                  // soundSysOne.ctx.fillText("+++", c, Math.floor(soundSysOne.variables.c/40));
                   soundSysOne.marks  = soundSysOne.marks  + 1;    
               }
 
@@ -437,49 +570,84 @@ var rect = function() {
     soundSysOne.ctx.fillStyle = 'rgb(0,0,0)'
 
     // DRUMS --------->
-        if (soundSysOne.row % 128 == 0) {
-    if (soundSysOne.threshold.sum_notes > 450000) {        
-        if (soundSysOne.kick_2_pattern[soundSysOne.drum_count] == "x") {  
-            soundSysOne.kick_2.triggerAttack('+0.05'); 
-        }
-    } else {
-        
-        if (soundSysOne.hat_pattern[soundSysOne.drum_count] == "x") {  
-           soundSysOne.hat.triggerAttack('+0.05'); 
-        } 
-        if (soundSysOne.kick_pattern[soundSysOne.drum_count] == "x") {  
-           soundSysOne.kick_1.triggerAttack('+0.08'); 
-        } 
-    }
-       if (soundSysOne.threshold.sum_notes > 300000) {
-       
-        if (soundSysOne.snare_pattern[soundSysOne.drum_count] == "x") {  
-            soundSysOne.snare.triggerAttack('+0.05'); 
-        }
-    } else {
-        
-         if (soundSysOne.snare_pattern[soundSysOne.drum_count] == "x") {  
-            soundSysOne.snare.triggerAttack('+0.05'); 
-        } 
-    }
+   // console.log(soundSysOne.collections.diff_note_collection.length)
+  
 
-}
-    soundSysOne.drum_count++; 
-    if (soundSysOne.drum_count > soundSysOne.snare_pattern.length-1) {
-        soundSysOne.drum_count = 0; 
+   if (soundSysOne.colors.diff > 150) {
+  if (soundSysOne.row % 4 == 0) {  
+      var t = soundSysOne.play.base_tones[Math.floor(soundSysOne.threshold.sum_notes/1000)]; 
+        soundSysOne.sum.triggerAttackRelease(t, undefined, 1)
     }
-   
+       if (soundSysOne.row % 4 == 2) {  
+      
+      var t = soundSysOne.play.base_tones[Math.floor(soundSysOne.threshold.diff_notes/1000)]; 
+
+        soundSysOne.sum.triggerAttackRelease(t, undefined, 1)
+    }
+  }
+
+    if (soundSysOne.drums_on == true) {
+        if (soundSysOne.collections.red_note_collection.length > soundSysOne.threshold.red_out) {       
+            if (soundSysOne.kick_2_pattern[soundSysOne.drum_count] == "x") {  
+                soundSysOne.kick_2.triggerAttack('+0.05'); 
+            }
+        }
+            
+        if (soundSysOne.collections.green_note_collection.length > soundSysOne.threshold.green_out) { 
+            if (soundSysOne.row % 64 == 62 || soundSysOne.row % 64 == 63) {
+                soundSys.op_hat.triggerAttack('+0.05');
+            } else {
+                soundSysOne.hat.triggerAttack('+0.05');  
+            }
+        } else {
+          if (soundSysOne.row % 4 == 0 ) {
+              soundSys.bell.triggerAttack('+0.05');  
+          }
+
+        }
+
+        if (soundSysOne.collections.white_note_collection.length > soundSysOne.threshold.white_out) { 
+            if (soundSysOne.kick_pattern[soundSysOne.drum_count] == "x") {  
+                   soundSysOne.kick_1.triggerAttack('+0.08'); 
+                } 
+        } else {
+            if (soundSysOne.row % 64 == 12) {
+                soundSys.swoosh.triggerAttack('+0.05');
+            }
+        }
+        if (soundSysOne.collections.black_note_collection.length > soundSysOne.threshold.black_out) { 
+            if (soundSysOne.snare_pattern[soundSysOne.drum_count] == "x") {  
+                soundSysOne.snare.triggerAttack('+0.05'); 
+            }
+        } else {
+            
+             if (soundSysOne.snare_pattern[soundSysOne.drum_count] == "x") {  
+                soundSysOne.snare_2.triggerAttack('+0.05'); 
+            } 
+            if (soundSysOne.row % 32 == 16 || soundSysOne.row % 64 == 17 ) {
+                soundSys.clap.triggerAttack('+0.05');
+                console.log("c")
+            }
+        }
+
+
+        soundSysOne.drum_count++; 
+        if (soundSysOne.drum_count > soundSysOne.snare_pattern.length-1) {
+            soundSysOne.drum_count = 0; 
+        }
+   }
     // add extra drums mix
     if (soundSysOne.colors.diff > 50) {
         var rand = Math.floor(Math.random() * 10); 
         if (rand > 8) {
+            soundSysOne.clap.volume.value = 0.3; 
             soundSysOne.clap.triggerAttack('+0.05'); 
         } 
         if (rand < 2) {
             soundSysOne.swoosh.triggerAttack('+0.05');  
         }
         if (rand < 3) {
-            // ophat.triggerAttack('+0.05');  
+             
         }
         if (rand < 4) {
           // soundSysOne.lectric.volume.value = -16
@@ -489,11 +657,11 @@ var rect = function() {
     }
     // choose bewteen diffrent tone sets
     if (soundSysOne.row % 128 == 0) {
-        if (soundSysOne.threshold.sum_notes > 1600) {
+        if (soundSysOne.threshold.sum_notes > 1000) {
             soundSysOne.base_tones = soundSysOne.progress_0_base ; 
             soundSysOne.mid_tones = soundSysOne.progress_0_mid;
             soundSysOne.high_tones = soundSysOne.progress_0_high; 
-        } else if (soundSysOne.threshold.sum_notes < 800) {
+        } else if (soundSysOne.threshold.sum_notes < 1000) {
             soundSysOne.base_tones = soundSysOne.progress_1_base; 
             soundSysOne.mid_tones = soundSysOne.progress_1_mid;
             soundSysOne.high_tones = soundSysOne.progress_1_high;
@@ -503,158 +671,143 @@ var rect = function() {
             soundSysOne.high_tones = soundSysOne.progress_3_high;
         }
     }
-
+    // red, fmsynth, midtones
     if (soundSysOne.collections.red_note_collection.length > soundSysOne.threshold.red_out && soundSysOne.play.red == true) {
-        if (soundSysOne.row % 8 == 0 || soundSysOne.row % 8 == 6  ) {  
-            soundSysOne.fmsynth.volume.value = soundSysOne.collections.red_note_collection.length-15; 
-            soundSysOne.fmsynth.set({
-                    modulationIndex: soundSysOne.divitions.red*3,                            
-            });        
+        if (soundSysOne.row % 4 == 0 || soundSysOne.row % 8 == 7  ) {  
+            soundSysOne.red_note = getNoteToPlay(soundSysOne.collections.red_note_collection, soundSysOne.mid_tones, 2); 
+            soundSysOne.red.volume.value = setVolume(soundSysOne.collections.red_note_collection, 3, 16, '-') //10 // soundSysOne.collections.red_note_collection.length/2; 
             soundSysOne.vel = Math.random() * 0.2 + 0.2;
-            if (soundSysOne.divitions.red < soundSysOne.collections.red_note_collection.length) {
-              soundSysOne.divitions.red  = soundSysOne.collections.red_note_collection.length; 
-            }
-            if (soundSysOne.row % 16 == 0) {
-                soundSysOne.divitions.red = soundSysOne.divitions.red / 2; 
-            }
-          //  soundSysOne.fmsynth.triggerAttackRelease(soundSysOne.base_tones[Math.floor(soundSysOne.collections.red_note_collection.length/soundSysOne.divitions.red/2)], "+0.1", soundSysOne.vel); 
-            
-           //soundSysOne.fmsynth.frequency.rampTo(soundSysOne.high_tones[Math.floor(soundSysOne.collections.red_note_collection.legth/(soundSysOne.divitions.red/2))], 0.1);
-           // soundSysOne.fmsynth.triggerAttackRelease(soundSysOne.mid_tones[Math.floor(soundSysOne.collections.red_note_collection.length/soundSysOne.divitions.red/2)], "+0.3", soundSysOne.vel); 
-            soundSysOne.fmsynth.triggerAttackRelease(soundSysOne.mid_tones[Math.floor(soundSysOne.collections.red_note_collection.length/soundSysOne.divitions.red/2)], "+0.3", soundSysOne.vel);  
-            soundSysOne.ctx.fillText(".", 160+(Math.floor(soundSysOne.collections.red_note_collection.length/3)*4), soundSysOne.row); 
-        } else {
-            soundSysOne.fmsynth.volume.rampTo(-100, 1);
-        }
+            soundSysOne.red.triggerAttackRelease(soundSysOne.red_note, "+0.05", soundSysOne.vel);  
+            //soundSysOne.ctx.fillText("."+soundSysOne.setcount.red, 160+(Math.floor(soundSysOne.collections.red_note_collection.length/3)*4), soundSysOne.row); 
+            soundSysOne.red.volume.rampTo(-100, "1n");
+            soundSysOne.logger = soundSysOne.logger + "red, "
+        } 
     } // end of red 
 
-    // green mid tone 
-    if (soundSysOne.row % 8 == 2 || soundSysOne.row % 8 == 2 ) { 
+    // green amsynth mid tone 
+    if (soundSysOne.row % 4 == 2) { 
         if (soundSysOne.play.green == true) {
-            if (soundSysOne.collections.green_note_collection.length > soundSysOne.threshold.green_out) {
-                soundSysOne.chellosynth.volume.value = Math.floor(Math.sqrt(soundSysOne.collections.green_note_collection.length+5)) || 1; 
-                soundSysOne.chellosynth.triggerAttackRelease(soundSysOne.play.mid_tones[Math.floor((soundSysOne.collections.green_note_collection.length || 1)/4)], '+0.05', soundSysOne.collections.green_note_collection.length*0.1); 
-                soundSysOne.ctx.fillText(".", 260+(Math.floor(soundSysOne.collections.green_note_collection.length/4)), soundSysOne.row); 
-              console.log(soundSysOne.mid_tones[Math.floor((soundSysOne.collections.green_note_collection.length-3)/4)], soundSysOne.collections.green_note_collection.length)
+          soundSysOne.templ = soundSysOne.collections.green_note_collection.length;
+          if (soundSysOne.templ > soundSysOne.threshold.green_out) {
+         
+              soundSysOne.setcount.green = setCount(soundSysOne.setcount.green, soundSysOne.templ)
+              soundSysOne.green.volume.value = setVolumeValue(soundSysOne.collections.green_note_collection, 5, 22, soundSysOne.setcount.green, '+'); 
+              soundSysOne.green_note = getNoteToPlayPos(soundSysOne.collections.green_note_collection, soundSysOne.play.mid_tones, 300, soundSysOne.setcount.green); 
+              soundSysOne.green.triggerAttackRelease(soundSysOne.green_note, '+0.05', 0.2);   
+              //soundSysOne.ctx.fillTextt(".", 260+(Math.floor(soundSysOne.collections.green_note_collection.length/4)), soundSysOne.row);           
+             soundSysOne.logger = soundSysOne.logger + "green, "
             }
+           
         }
     } else {
-        soundSysOne.chellosynth.volume.rampTo(-100, 3);
+        soundSysOne.green.volume.rampTo(-100, "1n");
     } // end of green
-   
-    if (soundSysOne.row % 8 == 7) { 
+    
+    // bleu monosynth base tones
+    if (soundSysOne.row % 8 == 3 || soundSysOne.row % 8 == 1 ) { 
+
         if (soundSysOne.collections.bleu_note_collection.length > soundSysOne.threshold.bleu_out && soundSysOne.play.bleu == true) {    
-                soundSysOne.pianoetta.volume.value = 1; 
-            if (soundSysOne.divitions.bleu < soundSysOne.collections.bleu_note_collection.length) {
-              soundSysOne.divitions.bleu  = soundSysOne.collections.bleu_note_collection.length; 
-            }
-            if (soundSysOne.bleu % 128 == 0) {
-                soundSysOne.divitions.bleu = soundSysOne.divitions.bleu / 2; 
-            }
-                soundSysOne.first_base = Math.floor(soundSysOne.collections.bleu_note_collection.length/(soundSysOne.divitions.bleu/5)); 
-                console.log(soundSysOne.collections.bleu_note_collection.length, soundSysOne.first_base)
-                if (soundSysOne.collections.bleu_note_collection.length > 5) {
-                    soundSysOne.feliz_notes = [soundSysOne.base_tones[soundSysOne.first_base+soundSysOne.first_base*2], soundSysOne.base_tones[soundSysOne.first_base+soundSysOne.first_base*3], soundSysOne.base_tones[soundSysOne.first_base+soundSysOne.first_base*4]];
-                    console.log(soundSysOne.base_tones[soundSysOne.first_base*3])
-                } else {
-                    soundSysOne.feliz_notes = [soundSysOne.base_tones[soundSysOne.first_base+5], soundSysOne.base_tones[soundSysOne.first_base+10]]; 
-                }
+                soundSysOne.bleu.volume.value = 0 // setVolume(soundSysOne.collections.green_note_collection, 3, 12, '+'); 
+                //soundSysOne.first_base = Math.floor(Math.sqrt(soundSysOne.collections.bleu_note_collection.length*3));  
+                soundSysOne.bleu_bases_coll = []
+                for (soundSysOne.i=0; soundSysOne.i < soundSysOne.collections.bleu_note_collection.length-1; soundSysOne.i = soundSysOne.i + 10) {
+                    soundSysOne.the_n = getNoteToPlayPos(soundSysOne.collections.bleu_note_collection, soundSysOne.play.base_tones, 400, soundSysOne.i); 
+                        //console.log(soundSysOne.the_n, "+0."+soundSysOne.i);
+                        soundSys.bleu.triggerAttack(soundSysOne.the_n)
+                        
+                    if (soundSysOne.collections.bleu_note_collection[soundSysOne.i].pos/4+64 < soundSysOne.collections.bleu_note_collection[soundSysOne.i+1].pos/4) {
+                        soundSysOne.i = soundSysOne.i + 5; 
+                        }
+                     
+                } 
+                // soundSysOne.FelizPart.values = soundSysOne.bleu_bases_coll;  
                
-                soundSysOne.FelizPart.values = soundSysOne.feliz_notes; 
-                soundSysOne.ctx.fillText(".", 360+soundSysOne.first_base, soundSysOne.row); 
-                soundSysOne.pianoetta.volume.rampTo(-100, 4);
-            } else {
-               //soundSysOne.pianoetta.volume.rampTo(-100, 7);
-        }
+                          
+                //soundSysOne.ctx.fillTextt(".", 360+soundSysOne.first_base, soundSysOne.row); 
+                soundSysOne.bleu.volume.rampTo(-50, "8n")
+                soundSysOne.logger = soundSysOne.logger + "bleu, "  
+            } 
     } // end of bleu
 
     if (soundSysOne.play.white == true) {
-        if (soundSysOne.row % 4 == 0) { 
+        if (soundSysOne.row % 4 == 2) { 
             if (soundSysOne.collections.white_note_collection.length > soundSysOne.threshold.white_out) {
-                soundSysOne.alien.volume.value = ((soundSysOne.collections.white_note_collection.length)*-0.1)-10;    
-                soundSysOne.fx_distortion.wet.value = soundSysOne.collections.white_note_collection.length*0.5;     
+                soundSysOne.white.volume.value = ((soundSysOne.collections.white_note_collection.length)*-0.1)-10;    
+                soundSysOne.fx_distortion.wet.value = soundSysOne.collections.white_note_collection.length;     
                 soundSysOne.vel = Math.random()   
-                soundSysOne.alien_temp = []; 
-                
-                if (soundSysOne.row % 32 == 0) {
-                    soundSysOne.count = Math.floor(soundSysOne.collections.white_note_collection.length/4);
-                    soundSysOne.spread = soundSysOne.collections.white_note_collection.length;
-                    console.log("count:", soundSysOne.count, "spread:", soundSysOne.spread)
-                    soundSysOne.alien.set({
-                        
-                        "oscillator" : {
-                          "count" :  soundSysOne.count, // 3
-                          "spread" : soundSysOne.spread, // 30
-                        },
-                        
-                        
-                    });
-                }
-                for (w=1; w < soundSysOne.collections.white_note_collection.length ; w = w+1) { 
-                    soundSysOne.alien_temp.push(soundSysOne.mid_tones[Math.floor(soundSysOne.collections.white_note_collection[w].pos/400)]);  // soundSysOne.high_tones[the_sum], undefined, marks*0.1);          
-                }  
-                soundSysOne.ctx.fillText(".", 460+soundSysOne.collections.white_note_collection.length, soundSysOne.row);                 
-                soundSysOne.alien.triggerAttackRelease(soundSysOne.alien_temp, '+0.05')       
-            } else {
-                soundSysOne.alien.volume.rampTo(-100, 3)    
-            }
-        } else {
-            soundSysOne.alien.volume.rampTo(-100, 3)    
-        }
+                soundSysOne.alien_temp = getNoteToPlay(soundSysOne.collections.white_note_collection, soundSysOne.base_tones, 4);
+               
+                 //soundSysOne.ctx.fillTextt(".", 460+soundSysOne.collections.white_note_collection.length, soundSysOne.row);                 
+                soundSysOne.white.triggerAttackRelease(soundSysOne.alien_temp, '+0.05') 
+                soundSysOne.logger = soundSysOne.logger + "white, " 
+                soundSysOne.white.volume.rampTo(-100, 2)      
+            } 
+          }
     }// end of white
+ 
+    if (soundSysOne.row % 36 == 0) {
+        soundSysOne.count = Math.floor(soundSysOne.collections.white_note_collection.length/4);
+        soundSysOne.spread = soundSysOne.collections.white_note_collection.length;
+        if (soundSysOne.row % 36 == 0) { 
+            soundSysOne.white.set({                           
+                "oscillator" : {
+                  "count" :  soundSysOne.count, // 3
+                  "spread" : soundSysOne.spread, // 30
+                },                           
+            });
+        }
+    }
 
-    if (soundSysOne.collections.black_note_collection.length > soundSysOne.threshold.black_out && soundSysOne.play.black == true) {
-    
+    if (soundSysOne.collections.black_note_collection.length > soundSysOne.threshold.black_out && soundSysOne.play.black == true) {   
         if (soundSysOne.row %  8 == 5) {  
-            soundSysOne.bassline.volume.value = Math.floor(soundSysOne.collections.black_note_collection.length/10);          
+            soundSysOne.black.volume.value = 10; // Math.floor(soundSysOne.collections.black_note_collection.length/10);          
             soundSysOne.vel = Math.random() * 0.3 + 0.2;   
             soundSysOne.base_tone_val = Math.floor(soundSysOne.collections.black_note_collection.length / 7);
             soundSysOne.the_base_tone = soundSysOne.play.base_tones[soundSysOne.base_tone_val]; 
-            soundSysOne.bassline.triggerAttack(soundSysOne.play.the_base_tone, '+0.05');
-            soundSysOne.ctx.fillText(".", 460+soundSysOne.collections.black_note_collection.length, soundSysOne.row);
-            if (soundSysOne.collections.black_note_collection.length > 4) {
+            soundSysOne.black.triggerAttack(soundSysOne.play.the_base_tone, '+0.05');
+            //soundSysOne.ctx.fillTextt(".", 460+soundSysOne.collections.black_note_collection.length, soundSysOne.row);
+            if (soundSysOne.collections.black_note_collection.length > 2) {
                 soundSysOne.monoBaseGuitar.volume.value = -13;  
                 soundSysOne.vel = Math.random() * 0.1 + 0.1;
-                soundSysOne.send_base_tones = [
-                                   soundSysOne.mid_tones[Math.floor(soundSysOne.collections.black_note_collection[4].pos/400)],
-                                   soundSysOne.mid_tones[Math.floor(soundSysOne.collections.black_note_collection[3].pos/400)], 
-                                   soundSysOne.mid_tones[Math.floor(soundSysOne.collections.black_note_collection[2].pos/400)],
-                                   soundSysOne.mid_tones[Math.floor(soundSysOne.collections.black_note_collection[1].pos/400)],
-                                   soundSysOne.mid_tones[Math.floor(soundSysOne.collections.black_note_collection[0].pos/400)] ]                             
-                soundSysOne.bassPart.values = soundSysOne.send_base_tones; 
+                soundSysOne.black_temp = [];
+                 for (soundSysOne.w=1; soundSysOne.w < soundSysOne.collections.black_note_collection.length ; soundSysOne.w = soundSysOne.w+4) { 
+                    soundSysOne.black_temp.push(soundSysOne.mid_tones[Math.floor(soundSysOne.collections.black_note_collection[soundSysOne.w].pos/400)]);  // soundSysOne.high_tones[the_sum], undefined, marks*0.1);          
+                }                                        
+                soundSysOne.bassPart.values = soundSysOne.black_temp; 
                 soundSysOne.monoBaseGuitar.volume.rampTo(-100, 2)
             }
+            soundSysOne.logger = soundSysOne.logger + "black, "  
         } 
     } else {
-        soundSysOne.bassline.volume.rampTo(-100, 4)
+        soundSysOne.black.volume.rampTo(-100, 4)
     } // end of black1
+      
 
-    if (soundSysOne.play.diff == true) {        
-        if (soundSysOne.row % 4 == 3 ) {
 
-         
-            if (soundSysOne.collections.diff_note_collection.length > soundSysOne.threshold.diff_out) {
-                soundSysOne.synth4.volume.value = 4; 
-                //piano.volume.value = -8; 
-                if (soundSysOne.collections.diff_note_collection.length > 5) {
-                  soundSysOne.the_length  = 5; 
-
-                } else {
-                  soundSysOne.the_length = soundSysOne.collections.diff_note_collection.length; 
-                }
-                soundSysOne.ctx.fillText(".", 660+soundSysOne.collections.diff_note_collection.length, soundSysOne.row); 
-                for (v=0; v < soundSysOne.the_length; v=v+1) {
-                    soundSysOne.synth4.triggerAttackRelease(soundSysOne.mid_tones[Math.floor(soundSysOne.collections.diff_note_collection[v].pos/400)], "+"+v/2, 0.01) 
-                        console.log(soundSysOne.row, soundSysOne.mid_tones[Math.floor(soundSysOne.collections.diff_note_collection[v].pos/400)]) 
-                }         
-            
+    if (soundSysOne.play.diff == true) {  
+        if (soundSysOne.row % 8 == 0) { 
+            if (soundSysOne.collections.diff_note_collection.length > soundSysOne.threshold.diff_out) {  
+                soundSys.diff.volume.value = (soundSysOne.collections.diff_note_collection.length*-1)+30;  
+                for (soundSysOne.i = 0; soundSysOne.i < soundSysOne.collections.diff_note_collection.length-1; soundSysOne.i++) {
+                    if (soundSysOne.collections.diff_note_collection[soundSysOne.i].pos/4+128 < soundSysOne.collections.diff_note_collection[soundSysOne.i+1].pos/4) {
+                      soundSysOne.the_n = getNoteToPlayPos(soundSysOne.collections.diff_note_collection, soundSysOne.play.base_tones, 200, soundSysOne.i); 
+                      soundSys.diff.triggerAttackRelease(soundSysOne.the_n, "+0."+soundSysOne.i, 2)
+                    }
+                } 
+                  soundSysOne.black.volume.rampTo(-100, 4)
+                  soundSysOne.logger = soundSysOne.logger + "diff, "  
+            }
+                
         } 
-        soundSysOne.synth4.volume.rampTo(-100, 3);
-      }
-    } // end of diff
 
-    soundSysOne.colors.sum_notes = 0; 
-    soundSysOne.colors.diff_notes = 0; 
+    } // end of diff
+     soundSysOne.logger = soundSysOne.logger + " , " + soundSysOne.row % 64 
+    console.log(soundSysOne.logger); 
+    soundSysOne.logger = ''
+
+    
+    soundSysOne.threshold.sum_notes = 0; 
+    soundSysOne.threshold.diff_notes = 0; 
 
     soundSysOne.collections.red_note_collection = [];
     soundSysOne.collections.bleu_note_collection = [];

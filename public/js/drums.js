@@ -15,62 +15,42 @@ soundSys.kick_break_pattern =  ["x","-","-","-", "x","-","-","-", "x","x","x","-
 soundSys.snare_break_pattern = ["-","-","x","-", "-","-","x","-", "-","-","x","x", "-","-","x","-", ]; 
 soundSys.open_pattern =  ["-","-","-","-", "-","-"," ","-", "-","-","-","-", "-","x","-","x", ]; 
 
-soundSys.hat = new Tone.Sampler({
-  "url" : "/audio/hip-hop/hi-hat.wav", 
-    "volume": -6  
+soundSys.hat_1 = new Tone.Sampler({
+  "C1" : "/audio/hip-hop/hi-hat.wav", 
 }).toMaster();
+soundSys.hat_1.volume.value = -10; 
 
 soundSys.kick_1 = new Tone.Sampler({
-    "url" : "/audio/techno/kick.wav",
-     "volume": -8,
-      "envelope" : {
-      "attack" : 0.001,
-      "decay" : 0.02,
-      "sustain" : 0.01,
-      "release" : 0.01
-    }
+    "C1" : "/audio/techno/kick.wav",
 }).toMaster()
 
-soundSys.snare = new Tone.Sampler({
-    "url" : "/audio/hip-hop/snare.wav", 
-    "volume": -8
+soundSys.snare_1 = new Tone.Sampler({
+    "C1" : "/audio/hip-hop/snare.wav", 
 }).toMaster()
+soundSys.snare_1.volume.value = -10; 
 
 soundSys.kick_2 = new Tone.Sampler({
-    "url" : "./audio/hip-hop/kick.wav",
-    "volume": -4,  
-    envelope:{
-        decay:0.01,
-        sustain:0.5,
-        release:0.01,
-      }
+    "C1" : "./audio/hip-hop/kick.wav",
 }).toMaster()
 
 soundSys.snare_2 = new Tone.Sampler({
-    "url" : "./audio/techno/snare.wav",
-    "volume": -4,  
-    envelope:{
-        decay:0.01,
-        sustain:0.5,
-        release:0.01,
-      }
+    "C1" : "./audio/techno/snare.wav",
 }).toMaster()
 
 soundSys.hat_3 = new Tone.Sampler({
-  "url" : "./audio/techno/hi-hat.wav", 
+  "C1" : "./audio/techno/hi-hat.wav", 
 }).toMaster()
 
 soundSys.op_hat = new Tone.Sampler({
-  "url" : "./audio/505/hho.mp3", 
+  "C1" : "./audio/505/hho.mp3", 
 }).toMaster()
 
 soundSys.bell = new Tone.Sampler({
-  "url" : "./audio/505/agogoLow.mp3", 
+  "C1" : "./audio/505/agogoLow.mp3", 
 }).toMaster()
 
 soundSys.clap = new Tone.Sampler({
-  "url" : "./audio/FactoryKit/Clap/PD_Factory_Clap_02.wav",
-  "volume": -10  
+  "C1" : "./audio/FactoryKit/Clap/PD_Factory_Clap_02.wav", 
 }).toMaster(); 
 
 // EFFECTS ------------------->

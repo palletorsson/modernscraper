@@ -1,3 +1,17 @@
+
+if (oscillator == true) {
+    var osc = new Tone.Oscillator({
+      "frequency" : 440,
+      "volume" : 1
+    }).toMaster().start(); 
+    osc.type = "sawtooth6";
+    var osc2 = new Tone.Oscillator({
+      "frequency" : 440,
+      "volume" : 1
+    }).toMaster().start(); 
+    osc.type = "sine";
+    
+}
 //AutoPanner - a penning modulation effect
     var panner = new Tone.AutoPanner({
       "frequency" : 4,
@@ -160,7 +174,7 @@ var hat = new Tone.MembraneSynth({
  }).toMaster();
 
 var synthPart = new Tone.Sequence(function(time, note){
-    snare.triggerAttackRelease("8n")
+    kick.triggerAttackRelease(note, "4n", time)
       
 
     if (osc_cell > 10) {

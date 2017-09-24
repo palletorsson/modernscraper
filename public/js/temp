@@ -1,0 +1,195 @@
+           //if (soundSysOne.divitions.red < soundSysOne.collections.red_note_collection.length) {
+              //soundSysOne.divitions.red  = soundSysOne.collections.red_note_collection.length; 
+            //}
+            //if (soundSysOne.row % 16 == 0) {
+             //   soundSysOne.divitions.red = soundSysOne.divitions.red / 2; 
+            //}
+          //  soundSysOne.fmsynth.triggerAttackRelease(soundSysOne.base_tones[Math.floor(soundSysOne.collections.red_note_collection.length/soundSysOne.divitions.red/2)], "+0.1", soundSysOne.vel); 
+            
+           //soundSysOne.fmsynth.frequency.rampTo(soundSysOne.high_tones[Math.floor(soundSysOne.collections.red_note_collection.legth/(soundSysOne.divitions.red/2))], 0.1);
+           // soundSysOne.fmsynth.triggerAttackRelease(soundSysOne.mid_tones[Math.floor(soundSysOne.collections.red_note_collection.length/soundSysOne.divitions.red/2)], "+0.3", soundSysOne.vel); 
+
+
+soundSys.crusher = new Tone.BitCrusher(4).toMaster();
+soundSys.green.connect(soundSys.crusher);
+// EFFECTS
+soundSys.fx_reverb = new Tone.Freeverb(0.1, 3000);
+soundSys.fx_reverb.wet.value = 0.6;
+soundSys.fx_delay = new Tone.PingPongDelay('32n', 1.1);
+soundSys.fx_delay.wet.value = 0.3;
+
+soundSys.harm = new Tone.AMSynth().toMaster(); 
+soundSys.harm.chain(soundSys.fx_reverb, soundSys.fx_delay);
+
+
+soundSys.pianofilter = new Tone.Filter(200, "highpass");
+
+soundSys.piano = new Tone.PolySynth(4, Tone.Synth, ).toMaster();
+
+
+//create a new cheby
+//var cheby = new Tone.Chebyshev(50);
+//create a monosynth connected to our cheby
+
+soundSys.pianoetta = new Tone.Synth().toMaster();
+
+ if (soundSysOne.row % 2000 == 0) {
+                soundSysOne.green.volume.value = -12; 
+                soundSysOne.green.set(soundSysOne.synthSets.am[soundSysOne.setcount.green]);
+                soundSysOne.setcount.green++; 
+                if (soundSysOne.setcount.green > soundSysOne.synthSets.fm.length) {
+                    soundSysOne.setcount.green = 0; 
+                }
+            }
+
+if (soundSysOne.row % 1000 == 0 ) {
+                soundSysOne.red.volume.value = -12; 
+                soundSysOne.red.set(soundSysOne.synthSets.fm[soundSysOne.setcount.red]);
+                soundSysOne.setcount.red++; 
+                if (soundSysOne.setcount.red > soundSysOne.synthSets.fm.length) {
+                    soundSysOne.setcount.red = 0; 
+                }
+            }
+
+            soundSysOne.red.set({
+                    modulationIndex: soundSysOne.collections.red_note_collection.length                            
+            });  
+
+soundSys.lfo = new Tone.LFO("1n", 400, 800);
+soundSys.lectric = new Tone.Synth().toMaster();
+
+soundSys.lfo.connect(soundSys.lectric.frequency);
+
+soundSysOne.mstrcomp = new Tone.Compressor({
+    "threshold" : -15,
+    "ratio" : 1.5,
+    "attack" : 0.01,
+    "release" : 0.1
+});
+//give a little boost to the lows
+soundSysOne.lowBump = new Tone.Filter(200, "lowshelf");
+soundSysOne.limiter = new Tone.Limiter(0);
+//route everything through the filter 
+//and compressor before going to the speakers
+Tone.Master.chain(soundSysOne.lowBump, soundSysOne.mstrcomp, soundSysOne.limiter);
+soundSysOne.ping = new Tone.PingPongDelay(.16, 0.2).toMaster();
+soundSysOne.ping.wet.value = 0.3
+soundSysOne.reverb = new Tone.Freeverb().connect(soundSysOne.ping);
+soundSysOne.dist = new Tone.Distortion(0.8).connect(soundSysOne.reverb);
+soundSysOne.dist1 = new Tone.Distortion(0.4).toMaster();
+soundSysOne.dist1.oversample.value = "2x"
+soundSysOne.chorus = new Tone.Chorus(4, 2.5, 0.5).connect(soundSysOne.dist);
+soundSysOne.filter_bass = new Tone.Filter(93.2, "highpass").connect(soundSysOne.chorus);
+soundSysOne.filter_pad = new Tone.Filter(198, "highpass").connect(soundSysOne.reverb);
+soundSysOne.filter_lead = new Tone.Filter(1200, "lowpass").connect(soundSysOne.chorus);
+soundSysOne.filter_noise = new Tone.Filter(1200, "highpass").connect(soundSysOne.reverb);
+soundSysOne.pad = new Tone.FMSynth().connect(soundSysOne.filter_pad);
+soundSysOne.bass = new Tone.FMSynth().connect(soundSysOne.filter_bass);
+soundSysOne.lead = new Tone.FMSynth().connect(soundSysOne.filter_lead);
+soundSysOne.noise = new Tone.NoiseSynth().connect(soundSysOne.filter_noise);
+
+
+                for (soundSys.i = 0; soundSys.i < soundSys.collections.diff_note_collection.length-1; soundSys.i++) {
+                    if (soundSys.collections.diff_note_collection[soundSys.i].pos/4+128 < soundSys.collections.diff_note_collection[soundSys.i+1].pos/4) {
+                        soundSys.the_n = getNoteToPlayPos(soundSys.collections.diff_note_collection, soundSys.play.base_tones, 400, soundSys.i); 
+                        soundSys.diff.triggerAttackRelease(soundSys.the_n, "+0."+soundSys.i, 0.9)
+                        soundSys.diff_temp.push(soundSys.the_n); 
+                    }
+                } 
+
+                {
+      "vibratoAmount" : 0.5,
+      "vibratoRate" : 10,
+      "portamento" : 10,
+      "harmonicity" : 1.005,
+      "volume" : 5,
+      "voice0" : {
+        "volume" : -2,
+        "oscillator" : {
+          "type" : "sawtooth"
+        },
+        "filter" : {
+          "Q" : 1,
+          "type" : "lowpass",
+          "rolloff" : -24
+        },
+        "envelope" : {
+          "attack" : 0.01,
+          "decay" : 0.25,
+          "sustain" : 0.4,
+          "release" : 1.2
+        },
+        "filterEnvelope" : {
+          "attack" : 0.001,
+          "decay" : 0.05,
+          "sustain" : 0.3,
+          "release" : 2,
+          "baseFrequency" : 100,
+          "octaves" : 4
+        }
+      },
+      "voice1" : {
+        "volume" : -10,
+        "oscillator" : {
+          "type" : "sawtooth"
+        },
+        "filter" : {
+          "Q" : 2,
+          "type" : "bandpass",
+          "rolloff" : -12
+        },
+        "envelope" : {
+          "attack" : 0.25,
+          "decay" : 4,
+          "sustain" : 0.1,
+          "release" : 0.8
+        },
+        "filterEnvelope" : {
+          "attack" : 0.05,
+          "decay" : 0.05,
+          "sustain" : 0.7,
+          "release" : 2,
+          "baseFrequency" : 5000,
+          "octaves" : -1.5
+        }
+      }
+    }
+                
+  if (soundSys.collections.black_note_collection.length > 100) {
+                //soundSys.monoBaseGuitar.volume.value = 10;  
+                soundSys.vel = Math.random() * 0.1 + 0.1;
+                soundSys.black_temp = [];
+               
+                for (soundSys.w=0; soundSys.w < soundSys.collections.black_note_collection.length ; soundSys.w = soundSys.w+1) { 
+         
+                    soundSys.the_n = getNoteToPlayPos(soundSys.collections.black_note_collection, soundSys.play.base_tones, 300, soundSys.w); 
+                    if (soundSys.black_temp.indexOf(soundSys.the_n) == -1) {
+                        soundSys.black_temp.push(soundSys.the_n);
+                    }
+                           
+                }                                      
+                soundSys.bassPart.values = soundSys.black_temp; 
+                soundSys.monoBaseGuitar.volume.rampTo(-100, 2)
+            }
+            soundSys.logger.push(soundSys.the_base_tone)
+            soundSys.marks  = soundSys.marks  + 1;
+        } 
+if (soundSysOne.row % 8 == 0 || soundSysOne.row % 8 == 2 || soundSysOne.row % 8 == 4) {
+                soundSysOne.red_note = getNoteToPlay(soundSysOne.collections.red_note_collection, soundSysOne.mid_tones, 4); 
+            console.log("8",soundSysOne.red_note, soundSysOne.row % 8)
+            } else {
+                soundSysOne.red_note = getNoteToPlay(soundSysOne.collections.red_note_collection, soundSysOne.high_tones, 4); 
+               console.log("else", soundSysOne.red_note, soundSysOne.row % 8)
+               soundSysOne.vel = Math.random() * 0.2 + 0.2;
+           
+            }
+
+                for (soundSys.p = 0; soundSys.p < soundSys.collections.pink_note_collection.length-1; soundSys.p++){
+                    soundSys.pink_note = getNoteToPlayPos(soundSys.collections.pink_note_collection, soundSys.base_tones, 400, soundSys.p); 
+                    if (soundSys.pinkc.indexOf(soundSys.the_n) == -1 && soundSys.collections.pink_note_collection[soundSys.p].pos != 0) {
+                        soundSys.pinkc.push(soundSys.pink_note)
+                        soundSys.pink.triggerAttackRelease(soundSys.pink_note, "+"+soundSys.p , 0.1); 
+                    } else {
+                        soundSys.p++; 
+                    }    
+                } 

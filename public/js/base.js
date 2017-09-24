@@ -26,32 +26,7 @@ soundSys.monoBase = new Tone.MonoSynth({
   }).toMaster();
 
 soundSys.black = new Tone.MonoSynth({
-    "oscillator": {
-        "type": "fmsquare5",
-    "modulationType" : "triangle",
-        "modulationIndex" : 6,
-        "harmonicity" : 0.501
-    },
-    "filter": {
-        "Q": 1,
-        "type": "lowpass",
-        "rolloff": -12
-    },
-    "envelope": {
-        "attack": 0.001,
-        "decay": 0.1,
-        "sustain": 1.4,
-        "release": 2
-    },
-    "filterEnvelope": {
-        "attack": 0.01,
-        "decay": 0.1,
-        "sustain": 0.8,
-        "release": 1.5,
-        "baseFrequency": 100,
-        "octaves": 2.4
-    }, 
-   "volume": -13,  
+ 
 }).toMaster();
 
 soundSys.chord_notes = [ "G2", "Ab2", "Eb2", "F2", ]; 
@@ -66,7 +41,6 @@ soundSys.bassPart = new Tone.Pattern(function(time, note){
 
 soundSys.bassPart.interval = "32n"; 
 
-soundSys.monoBaseGuitar.volume.rampTo(-100, 1)
 // Bass -------------->
 soundSys.bassline = new Tone.Synth();
 soundSys.basslineVolume = new Tone.Volume(-10);

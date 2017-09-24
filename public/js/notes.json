@@ -13,7 +13,7 @@
 			"type": 1,
 			"time": "+0.01",
 			"velocity": 0.3756410191766918,
-			"volume": 45,
+			"volume": -10,
 			"bar": 8,
 			"row": 8,
 			"notes": "ab3"
@@ -32,7 +32,7 @@
 			"type": 1,
 			"time": "+0.01",
 			"velocity": 0.24375730101019144,
-			"volume": 46,
+			"volume": -10,
 			"bar": 0,
 			"row": 16,
 			"notes": "G4"
@@ -44,7 +44,7 @@
 			"type": 1,
 			"time": "+0.14",
 			"velocity": 0.3281520367832854,
-			"volume": -12,
+			"volume": -52,
 			"bar": 1,
 			"row": 17,
 			"notes": "ab0"
@@ -60,7 +60,7 @@
 			"notes": ["D1", "F#1"],
 			"time": "+0.10",
 			"velocity": 0.3,
-			"volume": -12,
+			"volume": -32,
 			"bar": 5,
 			"row": 21
 		}]
@@ -73,7 +73,7 @@
 			"type": 1,
 			"time": "+0.01",
 			"velocity": 0.44780963044613603,
-			"volume": 45,
+			"volume": -10,
 			"bar": 8,
 			"row": 24,
 			"notes": "ab3"
@@ -85,7 +85,7 @@
 			"type": 1,
 			"time": "+0.14",
 			"velocity": 0.2694227278698236,
-			"volume": -12,
+			"volume": -22,
 			"bar": 9,
 			"row": 25,
 			"notes": "ab0"
@@ -115,7 +115,7 @@
 			"type": 1,
 			"time": "+0.14",
 			"velocity": 0.37239785622805355,
-			"volume": -13,
+			"volume": -23,
 			"bar": 1,
 			"row": 33,
 			"notes": "ab0"
@@ -131,7 +131,7 @@
 			"notes": ["F#1"],
 			"time": "+0.10",
 			"velocity": 0.3901937440503389,
-			"volume": -12,
+			"volume": -22,
 			"bar": 5,
 			"row": 37
 		}]
@@ -144,7 +144,7 @@
 			"type": 1,
 			"time": "+0.01",
 			"velocity": 0.5741461046040058,
-			"volume": 45,
+			"volume": 0,
 			"bar": 8,
 			"row": 40,
 			"notes": "G4"
@@ -156,7 +156,7 @@
 			"type": 1,
 			"time": "+0.14",
 			"velocity": 0.4611136798048392,
-			"volume": -12,
+			"volume": -22,
 			"bar": 9,
 			"row": 41,
 			"notes": "ab0"
@@ -193,7 +193,7 @@
 			"notes": ["F#1"],
 			"time": "+0.10",
 			"velocity": 0.3153715374413878,
-			"volume": -12,
+			"volume": -22,
 			"bar": 13,
 			"row": 45
 		}]
@@ -383,7 +383,7 @@
 			"type": 1,
 			"time": "+0.14",
 			"velocity": 0.2630984242772684,
-			"volume": -12,
+			"volume": -22,
 			"bar": 1,
 			"row": 65,
 			"notes": "ab0"
@@ -538,7 +538,7 @@
 			"type": 1,
 			"time": "+0.14",
 			"velocity": 0.38586863842792807,
-			"volume": -13,
+			"volume": -23,
 			"bar": 1,
 			"row": 81,
 			"notes": "ab0"
@@ -621,7 +621,7 @@
 			"type": 1,
 			"time": "+0.14",
 			"velocity": 0.4214006562018767,
-			"volume": -12,
+			"volume": -22,
 			"bar": 9,
 			"row": 89,
 			"notes": "ab0"

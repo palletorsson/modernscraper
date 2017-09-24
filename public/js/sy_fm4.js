@@ -15,7 +15,7 @@ var soundSys = {
   base_tone_val: 0,
   send_base_tones: 0, 
   first_base: 0, 
-  drums_on: true, 
+  drums_on: false, 
   logger: [], 
   doc: [], 
   colors: {

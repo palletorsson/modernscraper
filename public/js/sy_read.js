@@ -353,7 +353,7 @@ function createHandels() {
     var level1 = 0; 
     var level2 = 1; 
     $.each(soundSys.synthdefaults.fm, function( key, value ) { 
-      console.dir(soundSys.synthdefaults.fm[key])
+     //  console.dir(soundSys.synthdefaults.fm[key])
       if (typeof soundSys.synthdefaults.fm[key] == "object") {
       $.each(value, function( k, v ) {
 
@@ -434,6 +434,30 @@ function nextImage() {
 var rect = function() {
 
     // DRUM) --------->
+if (soundSys.drums_on == true) {
+
+        
+        if (soundSys.kick_pattern[soundSys.drum_count] == "x") {  
+        //   soundSys.kick_2.triggerAttack('+0.01'); 
+        } 
+
+        if (soundSys.row % 256 == 63) {
+           //soundSys.op_hat_1.triggerAttack('C1', '+0.05');
+        }
+        
+        if (soundSys.row % 4 == 0 || soundSys.row % 8 == 7 ) {
+           soundSys.hat_1.triggerAttack('C1', '+0.05');  
+        }
+
+        if (soundSys.snare_pattern[soundSys.drum_count] == "x") {  
+           soundSys.snare_1.triggerAttack('C1','+0.05'); 
+        }
+    
+        soundSys.drum_count++; 
+        if (soundSys.drum_count > soundSys.snare_pattern.length-1) {
+            soundSys.drum_count = 0; 
+        }
+   }
    // soundSys.white.volume.value = 30; 
     soundSys.thenotes = soundSys.noteSet.responseJSON[soundSys.row][0];
     //console.log(soundSys.thenotes)
@@ -443,10 +467,10 @@ var rect = function() {
             
 
             var synth = soundSys[soundSys.thenotes[i].color]; 
-            synth.volume.value = 10;
-            console.log(soundSys.thenotes[i].volume) //, i, soundSys.thenotes[i].notes, soundSys.row)
-            synth.triggerAttackRelease(soundSys.thenotes[i].notes, "+0.03", soundSys.thenotes[i].velocity); 
-       synth.volume.rampTo(-100, 1);
+            synth.volume.value = soundSys.thenotes[i].volume; 
+            // console.log(soundSys.thenotes[i]) //, i, soundSys.thenotes[i].notes, soundSys.row)
+            synth.triggerAttackRelease(soundSys.thenotes[i].notes, "8n", "+0.03", 1-soundSys.thenotes[i].velocity); 
+            // synth.volume.rampTo(-100, 3);
         }
     }
 
